@@ -1,0 +1,25 @@
+.client-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.client-admin-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: 3px;
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  cursor: pointer;
+}
+
+.client-admin-actions__danger {
+  border-color: var(--theme-error-500) !important;
+  color: var(--theme-error-500) !important;
+}
+
+.client-admin-actions [role='alert'] {
+  color: var(--theme-error-500);
+}
