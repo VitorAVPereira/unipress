@@ -26,6 +26,7 @@
     "@payloadcms/next": "3.88.0",
     "@payloadcms/richtext-lexical": "3.88.0",
     "@payloadcms/storage-vercel-blob": "3.88.0",
+    "@payloadcms/ui": "3.88.0",
     "@vercel/blob": "2.3.1",
     "dotenv": "16.4.7",
     "lucide-react": "0.563.0",
