@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import { normalizeEmail } from '@/lib/clientPortal'
+import { isPasswordRecoveryEnabled } from '@/lib/launch'
 
 export type AuthActionState = { error?: string; message?: string }
 
@@ -29,6 +30,10 @@ export async function logoutClientAction(): Promise<void> {
 }
 
 export async function forgotPasswordAction(_state: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  if (!isPasswordRecoveryEnabled()) {
+    return { message: 'A recuperação automática está indisponível. Fale com a equipe UniPress.' }
+  }
+
   const email = normalizeEmail(String(formData.get('email') || ''))
   if (email) {
     try {

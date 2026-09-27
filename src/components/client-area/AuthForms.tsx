@@ -16,7 +16,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   return <button className="button button-primary client-auth-submit" type="submit">{children}</button>
 }
 
-export function LoginForm({ passwordReset = false }: { passwordReset?: boolean }) {
+export function LoginForm({ passwordReset = false, recoveryEnabled = false }: { passwordReset?: boolean; recoveryEnabled?: boolean }) {
   const [state, action, pending] = useActionState(loginClientAction, initialState)
   return (
     <form action={action} className="client-auth-form">
@@ -27,7 +27,11 @@ export function LoginForm({ passwordReset = false }: { passwordReset?: boolean }
       <input autoComplete="current-password" id="client-password" name="password" required type="password" />
       {state.error && <p className="client-auth-error" role="alert">{state.error}</p>}
       <SubmitButton>{pending ? 'Entrando…' : 'Entrar'}</SubmitButton>
-      <Link className="text-link" href="/area-do-cliente/esqueci-senha">Esqueci minha senha</Link>
+      {recoveryEnabled ? (
+        <Link className="text-link" href="/area-do-cliente/esqueci-senha">Esqueci minha senha</Link>
+      ) : (
+        <p className="form-help">Para recuperação de acesso, fale com a equipe UniPress.</p>
+      )}
     </form>
   )
 }

@@ -1,0 +1,62 @@
+{
+  "name": "unipress",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:vercel": "payload migrate && next build",
+    "dev": "next dev",
+    "generate:importmap": "payload generate:importmap",
+    "generate:types": "payload generate:types",
+    "lint": "eslint .",
+    "migrate": "payload migrate",
+    "payload": "payload",
+    "seed": "tsx src/scripts/seed-demo.ts",
+    "start": "next start",
+    "test": "pnpm test:int",
+    "test:e2e": "playwright test",
+    "test:int": "vitest run --config vitest.config.mts",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@marsidev/react-turnstile": "1.6.1",
+    "@payloadcms/db-postgres": "3.88.0",
+    "@payloadcms/email-resend": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/richtext-lexical": "3.88.0",
+    "@payloadcms/storage-vercel-blob": "3.88.0",
+    "@vercel/blob": "2.3.1",
+    "dotenv": "16.4.7",
+    "lucide-react": "0.563.0",
+    "next": "16.3.3",
+    "payload": "3.88.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "resend": "6.26.0",
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.58.2",
+    "@tailwindcss/postcss": "4.3.3",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "22.19.9",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.3",
+    "jsdom": "28.0.0",
+    "postcss": "8.5.28",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.22.4",
+    "typescript": "5.7.3",
+    "vite-tsconfig-paths": "6.0.5",
+    "vitest": "4.0.18"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.15.1"
+}

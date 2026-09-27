@@ -4,13 +4,7 @@ const requiredProductionVariables = [
   'CRON_SECRET',
   'PREVIEW_SECRET',
   'NEXT_PUBLIC_SERVER_URL',
-  'BLOB_READ_WRITE_TOKEN',
-  'CERTIFICATES_BLOB_READ_WRITE_TOKEN',
-  'RESEND_API_KEY',
-  'RESEND_FROM_EMAIL',
-  'CONTACT_TO_EMAIL',
-  'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
-  'TURNSTILE_SECRET_KEY',
+  'NEXT_PUBLIC_WHATSAPP_NUMBER',
 ] as const
 
 export function missingProductionEnvironment(env: Record<string, string | undefined>) {

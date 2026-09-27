@@ -74,6 +74,16 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
 
   const hasFilters = writeCatalogFilters(filters).size > 0
 
+  if (products.length === 0) {
+    return (
+      <div className="empty-state">
+        <span>Em preparação</span>
+        <h2>Catálogo em atualização.</h2>
+        <p>Estamos organizando as fichas técnicas. Fale com a equipe para consultar modelos, faixas e disponibilidade.</p>
+      </div>
+    )
+  }
+
   return (
     <div className={`catalog-layout ${isPending ? 'is-pending' : ''}`}>
       <aside className="filters" aria-label="Filtros do catálogo">

@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { demoProducts, demoServices } from '@/data/demo'
 import type { CatalogProduct } from '@/lib/catalog'
 import type { About, Contact, Home, Media, Privacy, Product, Service, SiteSetting } from '@/payload-types'
+import { isDemoContentEnabled } from '@/lib/launch'
 
 type ContentOptions = { draft?: boolean }
 type PublicImage = { url: string; alt: string; updatedAt: string }
@@ -97,10 +98,10 @@ const defaultContact: PublicInstitutionalContent = {
 
 const defaultPrivacy: PublicInstitutionalContent = {
   title: 'Política de Privacidade',
-  content: 'Esta versão inicial descreve o tratamento realizado pelo formulário de contato. O texto deve ser revisado pela UniPress antes da publicação em produção.\n\nDados coletados: o formulário pode receber nome, empresa, e-mail, telefone, assunto e mensagem. Esses dados são utilizados exclusivamente para responder à solicitação enviada.\n\nEnvio e retenção: as mensagens são encaminhadas ao e-mail comercial da UniPress pelo provedor transacional configurado. O site não mantém uma base própria de leads.\n\nProteção contra abuso: o formulário utiliza mecanismos de prevenção contra envios automatizados. Dados técnicos mínimos podem ser processados pelos provedores de infraestrutura para segurança e entrega.\n\nSeus direitos: o titular pode solicitar confirmação, correção ou exclusão dos seus dados pelos canais apresentados na página de contato.\n\nCookies e métricas: o lançamento não utiliza analytics nem cookies não essenciais.',
+  content: 'Esta política descreve como a UniPress trata os dados enviados voluntariamente por seus canais de atendimento.\n\nDados de contato: ao iniciar uma conversa pelo WhatsApp, as informações fornecidas são utilizadas exclusivamente para responder à solicitação e prestar o atendimento solicitado.\n\nEnvio e retenção: as mensagens são processadas pelo canal escolhido pelo visitante e mantidas somente pelo período necessário ao atendimento e às obrigações aplicáveis.\n\nSegurança: dados técnicos mínimos podem ser processados pelos provedores de infraestrutura para garantir segurança e disponibilidade do site.\n\nSeus direitos: o titular pode solicitar confirmação, correção ou exclusão dos seus dados pelos canais apresentados na página de contato.\n\nCookies e métricas: este lançamento não utiliza analytics nem cookies não essenciais.',
 }
 
-const allowDemo = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEMO_CONTENT === 'true'
+const allowDemo = isDemoContentEnabled()
 
 function list(values?: { value: string }[] | null) {
   return values?.map((item) => item.value).filter(Boolean) || []

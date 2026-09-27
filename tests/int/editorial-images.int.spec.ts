@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import FrontendLayout from '@/app/(frontend)/layout'
 import HomePage from '@/app/(frontend)/page'
 import AboutPage from '@/app/(frontend)/sobre/page'
-import { getAboutContent, getHomeContent, getSiteSettings } from '@/lib/cms'
+import { getAboutContent, getHomeContent, getServices, getSiteSettings } from '@/lib/cms'
 
 vi.mock('next/font/google', () => ({
   Inter: () => ({ variable: '--font-body' }),
@@ -19,6 +19,7 @@ vi.mock('next/headers', () => ({
 vi.mock('@/lib/cms', () => ({
   getAboutContent: vi.fn(),
   getHomeContent: vi.fn(),
+  getServices: vi.fn(),
   getSiteSettings: vi.fn(),
 }))
 
@@ -33,6 +34,7 @@ const media = (url: string, alt: string) => ({
 describe('imagens editoriais', () => {
   beforeEach(() => {
     vi.mocked(getSiteSettings).mockResolvedValue({ whatsapp: '' } as never)
+    vi.mocked(getServices).mockResolvedValue([])
   })
 
   afterEach(() => {
@@ -80,6 +82,20 @@ describe('imagens editoriais', () => {
 
     expect(screen.getByRole('img', { name: 'Ícone de manômetros' })).not.toBeNull()
     expect(screen.getByRole('img', { name: 'Ícone de acessórios' })).not.toBeNull()
+  })
+
+  it('leva a chamada de calibração ao contato quando não há serviço publicado', async () => {
+    vi.mocked(getHomeContent).mockResolvedValue({
+      eyebrow: 'Chamada',
+      title: 'Página inicial',
+      description: 'Descrição',
+      heroImage: null,
+      benefits: [],
+    } as never)
+
+    render(await HomePage())
+
+    expect(screen.getByRole('link', { name: /Conhecer o serviço/ }).getAttribute('href')).toBe('/contato')
   })
 
   it('mantém os desenhos atuais dos cards quando não há imagens cadastradas', async () => {

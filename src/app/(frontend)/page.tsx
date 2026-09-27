@@ -14,14 +14,19 @@ import Link from 'next/link'
 
 import { GaugeVisual } from '@/components/site/GaugeVisual'
 import { buildWhatsAppOrContactURL } from '@/lib/whatsapp'
-import { getHomeContent, getSiteSettings } from '@/lib/cms'
+import { getHomeContent, getServices, getSiteSettings } from '@/lib/cms'
+import { calibrationCallToActionHref } from '@/lib/launch'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 
 export const metadata: Metadata = { alternates: { canonical: '/' } }
 
 export default async function HomePage() {
   const draft = (await draftMode()).isEnabled
-  const [home, settings] = await Promise.all([getHomeContent({ draft }), getSiteSettings()])
+  const [home, settings, services] = await Promise.all([
+    getHomeContent({ draft }),
+    getSiteSettings(),
+    getServices({ draft }),
+  ])
   const whatsapp = buildWhatsAppOrContactURL(
     settings.whatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '',
   )
@@ -211,7 +216,7 @@ export default async function HomePage() {
               Envie seus instrumentos ao laboratório UniPress. Nossa equipe realiza a calibração de
               pressão com rastreabilidade à Rede Brasileira de Calibração.
             </p>
-            <Link className="button button-light" href="/servicos/calibracao-de-pressao">
+            <Link className="button button-light" href={calibrationCallToActionHref(services)}>
               Conhecer o serviço <ArrowRight size={19} />
             </Link>
           </div>

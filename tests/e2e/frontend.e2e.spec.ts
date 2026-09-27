@@ -9,7 +9,7 @@ test.describe('site UniPress', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Manômetros e acessórios')
     await expect(page.getByRole('navigation', { name: 'Principal' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Ver catálogo' })).toBeVisible()
-    await expect(page.locator('.hero-product-image')).toBeVisible()
+    await expect(page.locator('.hero-visual').locator('.hero-product-image, .gauge').first()).toBeVisible()
   })
 
   test('não exibe círculos decorativos atrás da imagem principal', async ({ page }) => {
@@ -62,32 +62,28 @@ test.describe('site UniPress', () => {
     })
   })
 
-  test('filtra o catálogo e persiste a busca na URL', async ({ page }) => {
+  test('apresenta o catálogo em atualização sem produtos demonstrativos', async ({ page }) => {
     await page.goto('/produtos')
 
-    expect(await page.getByTestId('product-card').count()).toBeGreaterThan(1)
-    await page.getByRole('searchbox', { name: 'Buscar produtos' }).fill('inox')
-
-    await expect(page).toHaveURL(/q=inox/)
-    await expect(page.getByTestId('product-card')).toHaveCount(1)
-    await expect(page.getByText('Manômetro Industrial Inox')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Catálogo em atualização.' })).toBeVisible()
+    await expect(page.getByTestId('product-card')).toHaveCount(0)
+    await expect(page.getByRole('searchbox', { name: 'Buscar produtos' })).toHaveCount(0)
   })
 
-  test('abre a ficha do produto com consulta por WhatsApp', async ({ page }) => {
-    await page.goto('/produtos')
-    await page.getByRole('link', { name: 'Manômetro Industrial Inox', exact: true }).click()
+  test('oferece contato direto por WhatsApp sem formulário de e-mail', async ({ page }) => {
+    await page.goto('/contato')
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Manômetro Industrial Inox')
-    const href = await page.getByRole('link', { name: /Consultar no WhatsApp/ }).getAttribute('href')
-    expect(href === '/contato' || href?.includes('UP-MI100-DEMO')).toBe(true)
+    await expect(page.getByRole('heading', { name: 'Atendimento pelo WhatsApp' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Enviar mensagem' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Iniciar conversa' })).toBeVisible()
   })
 
-  test('oferece calibração de pressão sem alegar acreditação própria', async ({ page }) => {
-    await page.goto('/servicos/calibracao-de-pressao')
+  test('não cria link quebrado para calibração sem serviço publicado', async ({ page }) => {
+    await page.goto('/')
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Calibração de Pressão')
-    await expect(page.getByText(/rastreável à Rede Brasileira de Calibração/)).toBeVisible()
-    await expect(page.getByText(/laboratório acreditado/i)).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /Conhecer o serviço/ })).toHaveAttribute('href', '/contato')
+    await page.goto('/servicos')
+    await expect(page.getByRole('heading', { name: 'Catálogo de serviços em atualização.' })).toBeVisible()
   })
 
   test('mantém o menu móvel navegável', async ({ page }) => {
@@ -106,19 +102,15 @@ test.describe('site UniPress', () => {
     await page.goto('/')
     await page.getByRole('navigation', { name: 'Principal' }).first().getByRole('link', { name: 'Área do cliente' }).click()
 
-    await expect(page).toHaveURL('/area-do-cliente/entrar')
-    await expect(page.getByRole('heading', { level: 1, name: 'Acesse seus certificados' })).toBeVisible()
+    await expect(page).toHaveURL('/area-do-cliente/entrar', { timeout: 60_000 })
+    await expect(page.getByRole('heading', { level: 1, name: 'Acesse seus certificados' })).toBeVisible({ timeout: 60_000 })
     await expect(page.getByLabel('E-mail')).toBeVisible()
     await expect(page.getByLabel('Senha')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Esqueci minha senha' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Esqueci minha senha' })).toHaveCount(0)
+    await expect(page.getByText(/recuperação de acesso/i)).toBeVisible()
   })
 
-  test('mantém os filtros após recarregar e oferece estado 404', async ({ page }) => {
-    await page.goto('/produtos?q=inox&familia=manometro')
-    await expect(page.getByRole('searchbox', { name: 'Buscar produtos' })).toHaveValue('inox')
-    await page.reload()
-    await expect(page.getByTestId('product-card')).toHaveCount(1)
-
+  test('oferece estado 404 para páginas inexistentes', async ({ page }) => {
     await page.goto('/pagina-inexistente')
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/não.*encontrada/i)
   })

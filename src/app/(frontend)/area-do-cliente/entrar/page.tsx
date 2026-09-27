@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { LoginForm } from '@/components/client-area/AuthForms'
 import { getClientSession } from '@/lib/clientSession'
+import { isPasswordRecoveryEnabled } from '@/lib/launch'
 
 export const metadata: Metadata = { title: 'Entrar na área do cliente', robots: { index: false, follow: false } }
 
@@ -15,7 +16,7 @@ export default async function ClientLoginPage({ searchParams }: { searchParams: 
         <span className="eyebrow"><span />Área do cliente</span>
         <h1>Acesse seus certificados</h1>
         <p>Entre com o e-mail cadastrado pela UniPress.</p>
-        <LoginForm passwordReset={query.passwordReset === '1'} />
+        <LoginForm passwordReset={query.passwordReset === '1'} recoveryEnabled={isPasswordRecoveryEnabled()} />
       </div>
     </section>
   )
