@@ -3,6 +3,7 @@ import { Inter, Manrope } from 'next/font/google'
 
 import { SiteFooter } from '@/components/site/SiteFooter'
 import { SiteHeader } from '@/components/site/SiteHeader'
+import { WhatsAppFloatingButton } from '@/components/site/WhatsAppFloatingButton'
 import { getSiteSettings } from '@/lib/cms'
 
 import './globals.css'
@@ -23,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings()
+  const whatsapp = settings.whatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
   const headerLogo = typeof settings.headerLogo === 'object' && settings.headerLogo?.url
     ? { url: settings.headerLogo.url, alt: settings.headerLogo.alt }
     : undefined
@@ -48,9 +50,10 @@ export default async function FrontendLayout({ children }: { children: React.Rea
     <html className={`${inter.variable} ${manrope.variable}`} lang="pt-BR" data-scroll-behavior="smooth">
       <body>
         <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
-        <SiteHeader whatsapp={settings.whatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''} logo={headerLogo} links={navigation} />
+        <SiteHeader whatsapp={whatsapp} logo={headerLogo} links={navigation} />
         <main id="conteudo">{children}</main>
         <SiteFooter settings={settings} logo={footerLogo} links={navigation} />
+        <WhatsAppFloatingButton whatsapp={whatsapp} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
       </body>
     </html>
