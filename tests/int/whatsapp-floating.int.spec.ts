@@ -36,5 +36,10 @@ describe('atalho flutuante do WhatsApp', () => {
     )
     expect(shortcut?.getAttribute('target')).toBe('_blank')
     expect(shortcut?.getAttribute('rel')).toBe('noreferrer')
+
+    const icon = shortcut?.querySelector<HTMLImageElement>('img')
+    expect(icon).not.toBeNull()
+    expect(icon?.getAttribute('src')).toContain('/media/whatsapp.png')
+    expect(icon?.getAttribute('alt')).toBe('')
   })
 })
