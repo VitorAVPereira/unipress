@@ -69,6 +69,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    push: false,
   }),
   email: process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL
     ? resendAdapter({

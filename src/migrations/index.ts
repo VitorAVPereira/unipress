@@ -5,6 +5,7 @@ import * as migration_20260906_054159_area_cliente_certificados from './20260906
 import * as migration_20260907_162624_editorial_images from './20260907_162624_editorial_images';
 import * as migration_20260907_170407_editable_hero_proofs from './20260907_170407_editable_hero_proofs';
 import * as migration_20260907_174649_separate_header_footer_logos from './20260907_174649_separate_header_footer_logos';
+import * as migration_20261012_233634_certificados_padroes from './20261012_233634_certificados_padroes';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260907_174649_separate_header_footer_logos.up,
     down: migration_20260907_174649_separate_header_footer_logos.down,
-    name: '20260907_174649_separate_header_footer_logos'
+    name: '20260907_174649_separate_header_footer_logos',
+  },
+  {
+    up: migration_20261012_233634_certificados_padroes.up,
+    down: migration_20261012_233634_certificados_padroes.down,
+    name: '20261012_233634_certificados_padroes',
   },
 ];
