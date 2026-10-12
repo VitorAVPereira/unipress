@@ -115,6 +115,23 @@ test.describe('site UniPress', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/não.*encontrada/i)
   })
 
+  test('mantém a página de certificados dos padrões acessível e não indexada', async ({ page, request }) => {
+    const response = await page.goto('/certificados-padroes')
+
+    expect(response?.status()).toBe(200)
+    expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow')
+    await expect(page.getByRole('heading', { level: 1, name: 'Certificados dos padrões UniPress.' })).toBeVisible()
+    await expect(page.locator('.site-header')).toBeVisible()
+    await expect(page.locator('.site-footer')).toBeVisible()
+    await expect(page.locator('nav a[href="/certificados-padroes"]')).toHaveCount(0)
+
+    const sitemap = await request.get('/sitemap.xml')
+    expect(await sitemap.text()).not.toContain('/certificados-padroes')
+
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag22aa']).analyze()
+    expect(results.violations).toEqual([])
+  })
+
   test('não apresenta violações automáticas WCAG A/AA nas páginas principais', async ({ page }) => {
     for (const path of ['/', '/produtos', '/servicos', '/sobre', '/contato', '/privacidade', '/area-do-cliente/entrar']) {
       await page.goto(path)
