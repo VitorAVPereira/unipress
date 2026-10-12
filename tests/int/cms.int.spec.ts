@@ -22,6 +22,8 @@ describe('CMS UniPress', () => {
         'services',
         'clients',
         'calibrations',
+        'reference-standards',
+        'reference-certificates',
         'audit-events',
       ]),
     )
@@ -84,5 +86,19 @@ describe('CMS UniPress', () => {
     })
     expect(calibrations.admin.group).toBe('Área do cliente')
     expect(payload.collections['audit-events'].config.access.create).toBeDefined()
+  })
+
+  it('configura certificados de padrões em coleções administrativas separadas', () => {
+    const standards = payload.collections['reference-standards'].config
+    const certificates = payload.collections['reference-certificates'].config
+
+    expect(standards.admin.group).toBe('Certificados dos padrões')
+    expect(certificates.admin.group).toBe('Certificados dos padrões')
+    expect(certificates.upload).toMatchObject({
+      bulkUpload: false,
+      mimeTypes: ['application/pdf'],
+      pasteURL: false,
+    })
+    expect(certificates.versions).toBeDefined()
   })
 })

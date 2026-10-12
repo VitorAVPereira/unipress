@@ -12,6 +12,8 @@ import { Clients } from './collections/Clients'
 import { Media } from './collections/Media'
 import { ProductCategories } from './collections/ProductCategories'
 import { Products } from './collections/Products'
+import { ReferenceCertificates } from './collections/ReferenceCertificates'
+import { ReferenceStandards } from './collections/ReferenceStandards'
 import { Services } from './collections/Services'
 import { Users } from './collections/Users'
 import { About } from './globals/About'
@@ -75,7 +77,19 @@ export default buildConfig({
         defaultFromName: 'UniPress',
       })
     : undefined,
-  collections: [Products, ProductCategories, Services, Media, Documents, Clients, Calibrations, AuditEvents, Users],
+  collections: [
+    Products,
+    ProductCategories,
+    Services,
+    Media,
+    Documents,
+    Clients,
+    Calibrations,
+    AuditEvents,
+    ReferenceStandards,
+    ReferenceCertificates,
+    Users,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [SiteSettings, Home, About, Contact, Privacy],
   plugins,

@@ -11,6 +11,7 @@ describe('gate de configuração de produção', () => {
       'PREVIEW_SECRET',
       'NEXT_PUBLIC_SERVER_URL',
       'NEXT_PUBLIC_WHATSAPP_NUMBER',
+      'STANDARDS_BLOB_READ_WRITE_TOKEN',
     ])
   })
 
@@ -23,6 +24,7 @@ describe('gate de configuração de produção', () => {
         'PREVIEW_SECRET',
         'NEXT_PUBLIC_SERVER_URL',
         'NEXT_PUBLIC_WHATSAPP_NUMBER',
+        'STANDARDS_BLOB_READ_WRITE_TOKEN',
       ].map((key) => [key, `${key}-valor`]),
     )
 

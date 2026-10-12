@@ -76,6 +76,8 @@ export interface Config {
     clients: Client;
     calibrations: Calibration;
     'audit-events': AuditEvent;
+    'reference-standards': ReferenceStandard;
+    'reference-certificates': ReferenceCertificate;
     users: User;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -98,6 +100,8 @@ export interface Config {
     clients: ClientsSelect<false> | ClientsSelect<true>;
     calibrations: CalibrationsSelect<false> | CalibrationsSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
+    'reference-standards': ReferenceStandardsSelect<false> | ReferenceStandardsSelect<true>;
+    'reference-certificates': ReferenceCertificatesSelect<false> | ReferenceCertificatesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -608,6 +612,43 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reference-standards".
+ */
+export interface ReferenceStandard {
+  id: number;
+  tag: string;
+  searchKey: string;
+  visible?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reference-certificates".
+ */
+export interface ReferenceCertificate {
+  id: number;
+  standard: number | ReferenceStandard;
+  year: number;
+  /**
+   * Ao publicar, substitui o certificado atual anterior desta TAG.
+   */
+  isCurrent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -753,6 +794,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-events';
         value: number | AuditEvent;
+      } | null)
+    | ({
+        relationTo: 'reference-standards';
+        value: number | ReferenceStandard;
+      } | null)
+    | ({
+        relationTo: 'reference-certificates';
+        value: number | ReferenceCertificate;
       } | null)
     | ({
         relationTo: 'users';
@@ -1152,6 +1201,38 @@ export interface AuditEventsSelect<T extends boolean = true> {
   entityReference?: T;
   details?: T;
   occurredAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reference-standards_select".
+ */
+export interface ReferenceStandardsSelect<T extends boolean = true> {
+  tag?: T;
+  searchKey?: T;
+  visible?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reference-certificates_select".
+ */
+export interface ReferenceCertificatesSelect<T extends boolean = true> {
+  standard?: T;
+  year?: T;
+  isCurrent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
