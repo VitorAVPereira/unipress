@@ -1,7 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOnly } from '@/access/portal'
-import { prepareReferenceStandard } from '@/hooks/referenceStandards'
+import {
+  prepareReferenceStandard,
+  revalidateDeletedReferenceStandard,
+  revalidateReferenceStandard,
+} from '@/hooks/referenceStandards'
 import { validateReferenceTag } from '@/lib/referenceCertificates'
 
 export const ReferenceStandards: CollectionConfig = {
@@ -19,7 +23,11 @@ export const ReferenceStandards: CollectionConfig = {
     group: 'Certificados dos padrões',
     useAsTitle: 'tag',
   },
-  hooks: { beforeValidate: [prepareReferenceStandard] },
+  hooks: {
+    afterChange: [revalidateReferenceStandard],
+    afterDelete: [revalidateDeletedReferenceStandard],
+    beforeValidate: [prepareReferenceStandard],
+  },
   fields: [
     {
       name: 'tag',

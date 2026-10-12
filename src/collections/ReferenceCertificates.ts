@@ -1,7 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOnly } from '@/access/portal'
-import { validateReferenceCertificateFile } from '@/hooks/referenceCertificates'
+import {
+  ensurePublishedReferenceCertificateHasCurrent,
+  promoteReferenceCertificateAfterDelete,
+  syncCurrentReferenceCertificate,
+  validateReferenceCertificateFile,
+} from '@/hooks/referenceCertificates'
+import {
+  revalidateDeletedReferenceCertificate,
+  revalidateReferenceCertificate,
+} from '@/hooks/revalidateContent'
 import { validateReferenceCertificateYear } from '@/lib/referenceCertificates'
 
 export const ReferenceCertificates: CollectionConfig = {
@@ -19,7 +28,12 @@ export const ReferenceCertificates: CollectionConfig = {
     group: 'Certificados dos padrões',
     useAsTitle: 'filename',
   },
-  hooks: { beforeValidate: [validateReferenceCertificateFile] },
+  hooks: {
+    afterChange: [syncCurrentReferenceCertificate, revalidateReferenceCertificate],
+    afterDelete: [promoteReferenceCertificateAfterDelete, revalidateDeletedReferenceCertificate],
+    beforeChange: [ensurePublishedReferenceCertificateHasCurrent],
+    beforeValidate: [validateReferenceCertificateFile],
+  },
   fields: [
     {
       name: 'standard',

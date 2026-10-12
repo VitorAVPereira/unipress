@@ -1,6 +1,15 @@
 export const MAX_REFERENCE_CERTIFICATE_FILE_SIZE = 20 * 1024 * 1024
 export const REFERENCE_CERTIFICATES_BLOB_PREFIX = 'reference-certificates'
 
+export type ReplacementCandidate = {
+  id: number | string
+  year?: number | null
+  createdAt?: string | null
+  _status?: string | null
+  filename?: string | null
+  mimeType?: string | null
+}
+
 export function normalizeReferenceTag(value: string): string {
   return value
     .normalize('NFD')
@@ -33,4 +42,23 @@ export function validateReferenceCertificateUpload(mimeType: unknown, size: unkn
   }
 
   return true
+}
+
+export function selectReplacementReferenceCertificate<T extends ReplacementCandidate>(docs: T[]): T | undefined {
+  return [...docs]
+    .filter(
+      (doc) =>
+        doc._status === 'published' &&
+        Boolean(doc.filename) &&
+        doc.mimeType === 'application/pdf',
+    )
+    .sort((left, right) => {
+      const yearDifference = (right.year || 0) - (left.year || 0)
+      if (yearDifference) return yearDifference
+
+      const createdDifference = String(right.createdAt || '').localeCompare(String(left.createdAt || ''))
+      if (createdDifference) return createdDifference
+
+      return String(right.id).localeCompare(String(left.id), 'pt-BR', { numeric: true })
+    })[0]
 }

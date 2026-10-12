@@ -31,6 +31,31 @@ export const revalidateDeletedService: CollectionAfterDeleteHook = ({ doc, req }
   return doc
 }
 
+export const revalidateReferenceCertificate: CollectionAfterChangeHook = ({ doc, previousDoc, req }) => {
+  const affectsPublishedContent = doc._status === 'published' || previousDoc?._status === 'published'
+  if (!req.context?.skipReferenceCertificateLifecycle && affectsPublishedContent) {
+    revalidate(['/certificados-padroes'])
+  }
+  return doc
+}
+
+export const revalidateDeletedReferenceCertificate: CollectionAfterDeleteHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle && doc._status === 'published') {
+    revalidate(['/certificados-padroes'])
+  }
+  return doc
+}
+
+export const revalidateReferenceStandard: CollectionAfterChangeHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle) revalidate(['/certificados-padroes'])
+  return doc
+}
+
+export const revalidateDeletedReferenceStandard: CollectionAfterDeleteHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle) revalidate(['/certificados-padroes'])
+  return doc
+}
+
 export const revalidateGlobal: GlobalAfterChangeHook = ({ doc, global, req }) => {
   if (req.context?.disableRevalidate) return doc
   const paths: Record<string, string[]> = {
