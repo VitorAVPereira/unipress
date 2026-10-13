@@ -3,14 +3,20 @@
 import config from '@/payload.config'
 import { buildPublicReferenceStandards } from '@/lib/publicReferenceCertificates'
 import { normalizeReferenceTag } from '@/lib/referenceCertificates'
+import {
+  down as rollbackReferenceCertificatesMigration,
+  up as applyReferenceCertificatesMigration,
+} from '@/migrations/20261012_233634_certificados_padroes'
 import type { ReferenceCertificate, ReferenceStandard } from '@/payload-types'
 import { sql } from '@payloadcms/db-postgres'
 import { randomUUID } from 'node:crypto'
-import { getPayload, type Payload } from 'payload'
+import { createLocalReq, getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
+const { revalidatePath } = vi.hoisted(() => ({ revalidatePath: vi.fn() }))
+
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidatePath,
   revalidateTag: vi.fn(),
 }))
 
@@ -92,6 +98,30 @@ describe.sequential('certificados dos padrões no PostgreSQL', () => {
     })
     certificateIDs.push(first.id)
 
+    revalidatePath.mockClear()
+    const draftReq = await createLocalReq({ context: {} }, payload)
+    const editedDraft = await payload.update({
+      collection: 'reference-certificates',
+      id: first.id,
+      data: { year: 2030, isCurrent: true },
+      draft: true,
+      overrideAccess: true,
+      req: draftReq,
+    })
+    expect(editedDraft._status).toBe('draft')
+
+    const publishedAfterDraft = await payload.findByID({
+      collection: 'reference-certificates',
+      id: first.id,
+      depth: 0,
+      draft: false,
+      overrideAccess: true,
+    })
+    expect(publishedAfterDraft.year).toBe(2024)
+    expect(publishedAfterDraft.isCurrent).toBe(true)
+    expect(draftReq.context.skipReferenceCertificateLifecycle).toBeUndefined()
+    expect(revalidatePath).not.toHaveBeenCalled()
+
     await expect(
       payload.db.drizzle.execute(sql`
         INSERT INTO "reference_certificates" ("standard_id", "year", "is_current", "_status")
@@ -145,6 +175,54 @@ describe.sequential('certificados dos padrões no PostgreSQL', () => {
     expect(promoted.isCurrent).toBe(true)
   })
 
+  it('preserva um único atual sob publicações concorrentes', async () => {
+    const standard = await payload.create({
+      collection: 'reference-standards',
+      data: {
+        tag: `TAG-${run}-CONCORRENTE`,
+        searchKey: normalizeReferenceTag(`TAG-${run}-CONCORRENTE`),
+        visible: true,
+      },
+      overrideAccess: true,
+    })
+    standardIDs.push(standard.id)
+
+    const first = await payload.create({
+      collection: 'reference-certificates',
+      data: { standard: standard.id, year: 2024, isCurrent: true, _status: 'published' },
+      file: pdf(`${run}-concorrente-base.pdf`),
+      overrideAccess: true,
+    })
+    certificateIDs.push(first.id)
+
+    const attempts = await Promise.allSettled([
+      payload.create({
+        collection: 'reference-certificates',
+        data: { standard: standard.id, year: 2025, isCurrent: true, _status: 'published' },
+        file: pdf(`${run}-concorrente-a.pdf`),
+        overrideAccess: true,
+      }),
+      payload.create({
+        collection: 'reference-certificates',
+        data: { standard: standard.id, year: 2026, isCurrent: true, _status: 'published' },
+        file: pdf(`${run}-concorrente-b.pdf`),
+        overrideAccess: true,
+      }),
+    ])
+    for (const attempt of attempts) {
+      if (attempt.status === 'fulfilled') certificateIDs.push(attempt.value.id)
+    }
+
+    const published = await payload.find({
+      collection: 'reference-certificates',
+      depth: 0,
+      limit: 10,
+      overrideAccess: true,
+      where: { standard: { equals: standard.id } },
+    })
+    expect(published.docs.filter((doc) => doc._status === 'published' && doc.isCurrent)).toHaveLength(1)
+  })
+
   it('não torna uma TAG oculta pública e bloqueia leitura anônima das coleções', async () => {
     const hidden = await payload.create({
       collection: 'reference-standards',
@@ -186,5 +264,31 @@ describe.sequential('certificados dos padrões no PostgreSQL', () => {
         user: null,
       }),
     ).rejects.toThrow('not allowed')
+  })
+
+  it('executa rollback e reaplicação da migration sem erro', async () => {
+    for (const id of certificateIDs.splice(0).reverse()) {
+      await payload.delete({
+        collection: 'reference-certificates',
+        id,
+        context: { skipReferenceCertificateLifecycle: true },
+        overrideAccess: true,
+      }).catch(() => undefined)
+    }
+    for (const id of standardIDs.splice(0).reverse()) {
+      await payload.delete({ collection: 'reference-standards', id, overrideAccess: true }).catch(() => undefined)
+    }
+
+    const req = await createLocalReq({}, payload)
+    const migrationArgs = { db: payload.db.drizzle, payload, req } as never
+    await expect(rollbackReferenceCertificatesMigration(migrationArgs)).resolves.toBeUndefined()
+    await expect(applyReferenceCertificatesMigration(migrationArgs)).resolves.toBeUndefined()
+
+    const columns = await payload.db.drizzle.execute(sql`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'reference_certificates'
+    `)
+    expect(columns.rows.map((row) => row.column_name)).toEqual(expect.arrayContaining(['prefix', 'filename']))
   })
 })

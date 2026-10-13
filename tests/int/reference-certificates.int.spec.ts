@@ -16,6 +16,10 @@ import {
   validateReferenceCertificateYear,
   validateReferenceTag,
 } from '@/lib/referenceCertificates'
+import {
+  createReferenceCertificateBlobPlugin,
+  referenceCertificateBlobClientUpload,
+} from '@/plugins'
 
 type StoredCertificate = {
   id: number
@@ -49,15 +53,17 @@ function lifecycleHarness(initial: StoredCertificate[], context: Record<string, 
   const req = {
     context,
     payload: {
+      db: {
+        updateOne: async ({ data, id }: { data: Partial<StoredCertificate>; id: number }) => {
+          const index = state.findIndex((doc) => doc.id === id)
+          if (index >= 0) state[index] = { ...state[index], ...data }
+          return state[index]
+        },
+      },
       find: async ({ where }: { where?: Record<string, unknown> }) => ({
         docs: state.filter((doc) => matches(doc, where)),
         hasNextPage: false,
       }),
-      update: async ({ data, id }: { data: Partial<StoredCertificate>; id: number }) => {
-        const index = state.findIndex((doc) => doc.id === id)
-        if (index >= 0) state[index] = { ...state[index], ...data }
-        return state[index]
-      },
     },
   }
 
@@ -121,6 +127,31 @@ describe('certificados dos padrões', () => {
       staticDir: 'storage/reference-certificates',
     })
     expect(REFERENCE_CERTIFICATES_BLOB_PREFIX).toBe('reference-certificates')
+  })
+
+  it('configura upload direto privado com autorização de PDF até 20 MB', async () => {
+    const plugin = createReferenceCertificateBlobPlugin('vercel_blob_rw_test_secret')
+    const config = await plugin({ collections: [ReferenceCertificates] } as never)
+    const provider = config.admin?.components?.providers?.find((candidate: unknown) => {
+      const value = candidate as { clientProps?: { collectionSlug?: string } } | null
+      return value?.clientProps?.collectionSlug === 'reference-certificates'
+    })
+
+    expect(referenceCertificateBlobClientUpload).toEqual({
+      allowedContentTypes: ['application/pdf'],
+      maximumSizeInBytes: MAX_REFERENCE_CERTIFICATE_FILE_SIZE,
+      serverHandlerPath: '/vercel-blob-reference-certificates-upload',
+    })
+    expect(config.endpoints).toEqual([
+      expect.objectContaining({ method: 'post', path: '/vercel-blob-reference-certificates-upload' }),
+    ])
+    expect(provider).toEqual(expect.objectContaining({
+      clientProps: expect.objectContaining({
+        enabled: true,
+        extra: expect.objectContaining({ access: 'private' }),
+        prefix: REFERENCE_CERTIFICATES_BLOB_PREFIX,
+      }),
+    }))
   })
 
   it('seleciona a reposição por ano, criação e ID de forma determinística', () => {
@@ -227,5 +258,19 @@ describe('certificados dos padrões', () => {
     const skipped = lifecycleHarness([previous, next], { skipReferenceCertificateLifecycle: true })
     await syncCurrentReferenceCertificate({ doc: next, operation: 'update', req: skipped.req } as never)
     expect(skipped.state).toEqual([previous, next])
+  })
+
+  it('recusa mover um certificado publicado para outra TAG', async () => {
+    const current = certificate({ id: 1, standard: 10, isCurrent: true })
+    const { req } = lifecycleHarness([current])
+
+    await expect(
+      ensurePublishedReferenceCertificateHasCurrent({
+        data: { standard: 20 },
+        operation: 'update',
+        originalDoc: current,
+        req,
+      } as never),
+    ).rejects.toThrow('Não é possível alterar a TAG de um certificado publicado.')
   })
 })

@@ -2,7 +2,10 @@ import {
   APIError,
   type CollectionAfterChangeHook,
   type CollectionAfterDeleteHook,
+  type CollectionAfterErrorHook,
+  type CollectionAfterOperationHook,
   type CollectionBeforeChangeHook,
+  type CollectionBeforeOperationHook,
   type CollectionBeforeValidateHook,
   type PayloadRequest,
   type Where,
@@ -14,6 +17,7 @@ import {
 } from '@/lib/referenceCertificates'
 
 type RelationshipValue = number | string | { id?: number | string } | null | undefined
+const draftOperations = new WeakSet<PayloadRequest>()
 
 function relationshipID(value: RelationshipValue): number | string | undefined {
   if (typeof value === 'number' || typeof value === 'string') return value
@@ -24,8 +28,24 @@ function shouldSkip(context: Record<string, unknown> | undefined, req: PayloadRe
   return Boolean(context?.skipReferenceCertificateLifecycle || req.context?.skipReferenceCertificateLifecycle)
 }
 
-function internalContext(req: PayloadRequest) {
-  return { ...req.context, skipReferenceCertificateLifecycle: true }
+export function isReferenceCertificateDraftOperation(req: PayloadRequest): boolean {
+  return draftOperations.has(req)
+}
+
+export const markReferenceCertificateDraftOperation: CollectionBeforeOperationHook = ({ args, operation, req }) => {
+  if ((operation === 'create' || operation === 'update') && 'draft' in args && args.draft === true) {
+    draftOperations.add(req)
+  }
+  return args
+}
+
+export const clearReferenceCertificateDraftOperation: CollectionAfterOperationHook = ({ req, result }) => {
+  draftOperations.delete(req)
+  return result
+}
+
+export const clearReferenceCertificateDraftOperationAfterError: CollectionAfterErrorHook = ({ req }) => {
+  draftOperations.delete(req)
 }
 
 async function findPublishedCertificates(
@@ -46,6 +66,7 @@ async function findPublishedCertificates(
     limit: 500,
     overrideAccess: true,
     req,
+    draft: false,
     where: { and },
   })
 }
@@ -59,12 +80,10 @@ async function promoteLatestPublished(
   const replacement = selectReplacementReferenceCertificate(result.docs)
   if (!replacement) return
 
-  await req.payload.update({
+  await req.payload.db.updateOne({
     collection: 'reference-certificates',
     id: replacement.id,
     data: { isCurrent: true },
-    context: internalContext(req),
-    overrideAccess: true,
     req,
   })
 }
@@ -77,12 +96,10 @@ async function unmarkOtherPublishedCurrent(
   const result = await findPublishedCertificates(req, standard, excludeID)
   const currentOthers = result.docs.filter((certificate) => certificate.isCurrent)
   for (const certificate of currentOthers) {
-    await req.payload.update({
+    await req.payload.db.updateOne({
       collection: 'reference-certificates',
       id: certificate.id,
       data: { isCurrent: false },
-      context: internalContext(req),
-      overrideAccess: true,
       req,
     })
   }
@@ -106,7 +123,18 @@ export const ensurePublishedReferenceCertificateHasCurrent: CollectionBeforeChan
   originalDoc,
   req,
 }) => {
-  if (!data || shouldSkip(context, req)) return data
+  if (!data || shouldSkip(context, req) || isReferenceCertificateDraftOperation(req)) return data
+
+  const originalStandard = relationshipID(originalDoc?.standard as RelationshipValue)
+  const requestedStandard = relationshipID(data.standard as RelationshipValue)
+  if (
+    originalDoc?._status === 'published' &&
+    requestedStandard != null &&
+    originalStandard != null &&
+    requestedStandard !== originalStandard
+  ) {
+    throw new APIError('Não é possível alterar a TAG de um certificado publicado.', 400)
+  }
 
   const nextStatus = data._status ?? originalDoc?._status
   const nextCurrent = data.isCurrent ?? originalDoc?.isCurrent
@@ -137,7 +165,7 @@ export const syncCurrentReferenceCertificate: CollectionAfterChangeHook = async 
   previousDoc,
   req,
 }) => {
-  if (shouldSkip(context, req)) return doc
+  if (shouldSkip(context, req) || isReferenceCertificateDraftOperation(req)) return doc
 
   const standard = relationshipID(doc.standard as RelationshipValue)
   if (standard == null) return doc

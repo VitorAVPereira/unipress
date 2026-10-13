@@ -5737,6 +5737,12 @@
           "notNull": false,
           "default": "'draft'"
         },
+        "prefix": {
+          "name": "prefix",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "url": {
           "name": "url",
           "type": "varchar",
@@ -5974,6 +5980,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'draft'"
+        },
+        "version_prefix": {
+          "name": "version_prefix",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "version_url": {
           "name": "version_url",

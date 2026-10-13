@@ -22,7 +22,8 @@ export type PublicReferenceStandard = {
 
 type LabelledCertificate = PublicReferenceCertificate & { createdAt: string }
 
-function relationshipID(value: ReferenceCertificate['standard']): number {
+function relationshipID(value: ReferenceCertificate['standard'] | null | undefined): number | undefined {
+  if (value == null) return undefined
   return typeof value === 'object' ? value.id : value
 }
 

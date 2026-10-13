@@ -100,5 +100,8 @@ describe('CMS UniPress', () => {
       pasteURL: false,
     })
     expect(certificates.versions).toBeDefined()
+    expect(certificates.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'prefix', type: 'text' }),
+    ]))
   })
 })

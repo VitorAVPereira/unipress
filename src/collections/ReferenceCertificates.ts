@@ -2,7 +2,10 @@ import type { CollectionConfig } from 'payload'
 
 import { adminOnly } from '@/access/portal'
 import {
+  clearReferenceCertificateDraftOperation,
+  clearReferenceCertificateDraftOperationAfterError,
   ensurePublishedReferenceCertificateHasCurrent,
+  markReferenceCertificateDraftOperation,
   promoteReferenceCertificateAfterDelete,
   syncCurrentReferenceCertificate,
   validateReferenceCertificateFile,
@@ -31,7 +34,10 @@ export const ReferenceCertificates: CollectionConfig = {
   hooks: {
     afterChange: [syncCurrentReferenceCertificate, revalidateReferenceCertificate],
     afterDelete: [promoteReferenceCertificateAfterDelete, revalidateDeletedReferenceCertificate],
+    afterError: [clearReferenceCertificateDraftOperationAfterError],
+    afterOperation: [clearReferenceCertificateDraftOperation],
     beforeChange: [ensurePublishedReferenceCertificateHasCurrent],
+    beforeOperation: [markReferenceCertificateDraftOperation],
     beforeValidate: [validateReferenceCertificateFile],
   },
   fields: [

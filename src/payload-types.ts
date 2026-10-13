@@ -634,6 +634,7 @@ export interface ReferenceCertificate {
    * Ao publicar, substitui o certificado atual anterior desta TAG.
    */
   isCurrent?: boolean | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1221,6 +1222,7 @@ export interface ReferenceCertificatesSelect<T extends boolean = true> {
   standard?: T;
   year?: T;
   isCurrent?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

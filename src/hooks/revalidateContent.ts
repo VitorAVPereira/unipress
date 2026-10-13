@@ -1,6 +1,8 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, GlobalAfterChangeHook } from 'payload'
 
+import { isReferenceCertificateDraftOperation } from '@/hooks/referenceCertificates'
+
 function revalidate(paths: Array<string | undefined>) {
   paths.filter((path): path is string => Boolean(path)).forEach((path) => revalidatePath(path))
 }
@@ -33,7 +35,7 @@ export const revalidateDeletedService: CollectionAfterDeleteHook = ({ doc, req }
 
 export const revalidateReferenceCertificate: CollectionAfterChangeHook = ({ doc, previousDoc, req }) => {
   const affectsPublishedContent = doc._status === 'published' || previousDoc?._status === 'published'
-  if (!req.context?.skipReferenceCertificateLifecycle && affectsPublishedContent) {
+  if (!req.context?.skipReferenceCertificateLifecycle && !isReferenceCertificateDraftOperation(req) && affectsPublishedContent) {
     revalidate(['/certificados-padroes'])
   }
   return doc

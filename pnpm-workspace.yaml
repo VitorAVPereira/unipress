@@ -1,0 +1,2 @@
+patchedDependencies:
+  '@payloadcms/storage-vercel-blob@3.88.0': patches/@payloadcms__storage-vercel-blob@3.88.0.patch

@@ -21,6 +21,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
      "_status" "enum_reference_certificates_status" DEFAULT 'draft',
+     "prefix" varchar,
      "url" varchar,
      "thumbnail_u_r_l" varchar,
      "filename" varchar,
@@ -41,6 +42,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
      "version_updated_at" timestamp(3) with time zone,
      "version_created_at" timestamp(3) with time zone,
      "version__status" "enum__reference_certificates_v_version_status" DEFAULT 'draft',
+     "version_prefix" varchar,
      "version_url" varchar,
      "version_thumbnail_u_r_l" varchar,
      "version_filename" varchar,
@@ -95,20 +97,18 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    DROP INDEX IF EXISTS "reference_certificates_one_published_current_per_standard_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_reference_standards_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_reference_certificates_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_reference_standards_id_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_reference_certificates_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "reference_standards_id";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "reference_certificates_id";
   ALTER TABLE "reference_standards" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "reference_certificates" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_reference_certificates_v" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "reference_standards" CASCADE;
-  DROP TABLE "reference_certificates" CASCADE;
   DROP TABLE "_reference_certificates_v" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_reference_standards_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_reference_certificates_fk";
-
-  DROP INDEX "payload_locked_documents_rels_reference_standards_id_idx";
-  DROP INDEX "payload_locked_documents_rels_reference_certificates_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "reference_standards_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "reference_certificates_id";
+  DROP TABLE "reference_certificates" CASCADE;
+  DROP TABLE "reference_standards" CASCADE;
   DROP TYPE "public"."enum_reference_certificates_status";
   DROP TYPE "public"."enum__reference_certificates_v_version_status";`)
 }

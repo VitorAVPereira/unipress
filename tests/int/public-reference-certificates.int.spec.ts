@@ -143,4 +143,15 @@ describe('modelo público dos certificados dos padrões', () => {
     await expect(getPublicReferenceStandards()).resolves.toEqual([])
     expect(loggerError).toHaveBeenCalledOnce()
   })
+
+  it('ignora certificados órfãos sem ocultar as outras TAGs', () => {
+    const orphan = { ...certificates[0], id: 999, standard: null }
+
+    const result = buildPublicReferenceStandards(
+      standards as never,
+      [...certificates, orphan] as never,
+    )
+
+    expect(result.map((standard) => standard.tag)).toEqual(['PAD-2', 'PAD-10'])
+  })
 })

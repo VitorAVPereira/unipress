@@ -32,8 +32,9 @@ const publishedCertificate = (overrides: Record<string, unknown> = {}) => ({
   isCurrent: true,
   _status: 'published',
   filename: 'certificado-pi-20.pdf',
+  prefix: 'pasta-controlada',
   mimeType: 'application/pdf',
-  url: 'https://private.blob.example/reference-certificates/secret.pdf',
+  url: 'https://www.unipress.com.br/api/reference-certificates/file/certificado-pi-20.pdf',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   ...overrides,
@@ -78,9 +79,9 @@ describe('entrega pública controlada dos certificados dos padrões', () => {
     expect(response.status).toBe(200)
     expect(await response.text()).toBe('%PDF-test')
     expect(response.headers.get('content-disposition')).toBe('inline; filename="certificado-pi-20.pdf"')
-    expect([...response.headers.entries()].join(' ')).not.toContain('private.blob.example')
+    expect([...response.headers.entries()].join(' ')).not.toContain('pasta-controlada')
     expect(blobGet).toHaveBeenCalledWith(
-      'https://private.blob.example/reference-certificates/secret.pdf',
+      'pasta-controlada/certificado-pi-20.pdf',
       { access: 'private', token: 'blob-secret-token', useCache: false },
     )
   })
@@ -120,6 +121,21 @@ describe('entrega pública controlada dos certificados dos padrões', () => {
       .mockResolvedValueOnce({ id: 5, tag: 'PI-20', searchKey: 'pi20', visible: true })
 
     await expect(getDeliverableReferenceCertificate('12')).resolves.toMatchObject({ filename: 'certificado-pi-20.pdf' })
+  })
+
+  it('usa o prefixo fixo da coleção quando o documento não possui prefixo próprio', async () => {
+    findByID.mockResolvedValueOnce(publishedCertificate({ prefix: null }))
+    blobGet.mockResolvedValueOnce({
+      statusCode: 200,
+      stream: new ReadableStream({ start: (controller) => controller.close() }),
+    })
+
+    await deliverReferenceCertificate('12', 'inline')
+
+    expect(blobGet).toHaveBeenCalledWith(
+      'reference-certificates/certificado-pi-20.pdf',
+      { access: 'private', token: 'blob-secret-token', useCache: false },
+    )
   })
 
   it('retorna 503 genérico e registra falha temporária do Blob somente no servidor', async () => {

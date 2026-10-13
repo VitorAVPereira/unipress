@@ -5,12 +5,20 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import type { ReferenceStandard } from '@/payload-types'
+import { REFERENCE_CERTIFICATES_BLOB_PREFIX } from '@/lib/referenceCertificates'
 
 export type ReferenceCertificateDisposition = 'attachment' | 'inline'
 
 export type DeliverableReferenceCertificate = {
   filename: string
-  url?: string
+  pathname: string
+}
+
+function blobPathname(filename: string, storedPrefix?: string | null): string | undefined {
+  const prefix = storedPrefix || REFERENCE_CERTIFICATES_BLOB_PREFIX
+  const segments = prefix.replace(/\\/g, '/').split('/').filter(Boolean)
+  if (segments.some((segment) => segment === '.' || segment === '..')) return undefined
+  return path.posix.join(...segments, path.posix.basename(filename))
 }
 
 function safeFilename(filename: string): string {
@@ -76,9 +84,12 @@ export async function getDeliverableReferenceCertificate(
         })
     if (!standard.visible) return null
 
+    const pathname = blobPathname(certificate.filename, certificate.prefix)
+    if (!pathname) return null
+
     return {
       filename: certificate.filename,
-      url: certificate.url || undefined,
+      pathname,
     }
   } catch {
     return null
@@ -116,10 +127,9 @@ export async function deliverReferenceCertificate(
 
   const token = process.env.STANDARDS_BLOB_READ_WRITE_TOKEN
   if (!token) return localCertificateResponse(certificate, disposition)
-  if (!certificate.url) return notFoundResponse()
 
   try {
-    const result = await get(certificate.url, { access: 'private', token, useCache: false })
+    const result = await get(certificate.pathname, { access: 'private', token, useCache: false })
     if (!result) return notFoundResponse()
     if (result.statusCode !== 200) return unavailableResponse()
     return new Response(result.stream, {
