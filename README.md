@@ -72,9 +72,28 @@ pnpm build
    - `CRON_SECRET`
    - `NEXT_PUBLIC_SERVER_URL`
    - `NEXT_PUBLIC_WHATSAPP_NUMBER`
+   - `STANDARDS_BLOB_READ_WRITE_TOKEN`
 
 2. Importe o repositório na Vercel. O arquivo `vercel.json` executa `pnpm build:vercel`, que aplica as migrations antes do build do Next.js.
 
 3. Antes de divulgar o endereço público, acesse o mesmo banco em um ambiente controlado e crie o primeiro usuário administrador do Payload.
 
-O conteúdo demonstrativo é opt-in e bloqueado em produção. Para usá-lo somente em desenvolvimento, defina `ALLOW_DEMO_CONTENT=true`. Resend, Turnstile e os tokens Blob são opcionais e habilitam seus recursos apenas quando configurados.
+4. O store associado a `STANDARDS_BLOB_READ_WRITE_TOKEN` deve ser privado. Configure a variável tanto em Preview quanto em Production. Variáveis adicionadas ou alteradas na Vercel só entram em novos deployments, portanto faça um redeploy depois de configurá-la.
+
+O conteúdo demonstrativo é opt-in e bloqueado em produção. Para usá-lo somente em desenvolvimento, defina `ALLOW_DEMO_CONTENT=true`. Resend, Turnstile, `BLOB_READ_WRITE_TOKEN` e `CERTIFICATES_BLOB_READ_WRITE_TOKEN` continuam opcionais nesta fase.
+
+## Certificados dos padrões UniPress
+
+A página pública fica em `/certificados-padroes`, mas não aparece na navegação nem no sitemap e está marcada como `noindex`. Ela contém somente certificados dos padrões de referência da própria UniPress; os certificados de clientes permanecem isolados na área autenticada.
+
+Fluxo do administrador:
+
+1. No painel, abra **Certificados dos padrões > Padrões** e crie a TAG/identificação. A TAG normalizada é única.
+2. Em **Certificados dos padrões > Certificados dos padrões**, envie o PDF de até 20 MB como rascunho, selecione a TAG e informe o ano.
+3. Marque **Certificado atual** antes de publicar o primeiro PDF daquela TAG. Um novo PDF publicado como atual desmarca o anterior automaticamente.
+4. Os PDFs publicados anteriores continuam disponíveis no histórico. Se o atual for despublicado, desmarcado ou excluído, o publicado mais recente é promovido automaticamente.
+5. Use **Visível na página pública** no cadastro da TAG para mostrar ou ocultar a TAG inteira. Quando oculta, seus links diretos de visualização e download também deixam de funcionar publicamente.
+
+O schema do banco é controlado exclusivamente por migrations. Depois de atualizar o código localmente, execute `pnpm migrate` antes de iniciar o site. Na Vercel, `pnpm build:vercel` aplica as migrations automaticamente antes do build.
+
+O QR permanente aponta para `https://www.unipress.com.br/certificados-padroes`. Os arquivos prontos para impressão e uso digital estão em `docs/qr-code/`; regenere-os com `pnpm generate:standards-qr` se precisar reproduzi-los, sem alterar a URL.

@@ -103,7 +103,6 @@ export const validateReferenceCertificateFile: CollectionBeforeValidateHook = ({
 export const ensurePublishedReferenceCertificateHasCurrent: CollectionBeforeChangeHook = async ({
   context,
   data,
-  operation,
   originalDoc,
   req,
 }) => {

@@ -5,56 +5,56 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
    CREATE TYPE "public"."enum_reference_certificates_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__reference_certificates_v_version_status" AS ENUM('draft', 'published');
   CREATE TABLE "reference_standards" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"tag" varchar NOT NULL,
-  	"search_key" varchar NOT NULL,
-  	"visible" boolean DEFAULT true,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+     "id" serial PRIMARY KEY NOT NULL,
+     "tag" varchar NOT NULL,
+     "search_key" varchar NOT NULL,
+     "visible" boolean DEFAULT true,
+     "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+     "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
-  
+
   CREATE TABLE "reference_certificates" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"standard_id" integer,
-  	"year" numeric,
-  	"is_current" boolean DEFAULT false,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"_status" "enum_reference_certificates_status" DEFAULT 'draft',
-  	"url" varchar,
-  	"thumbnail_u_r_l" varchar,
-  	"filename" varchar,
-  	"mime_type" varchar,
-  	"filesize" numeric,
-  	"width" numeric,
-  	"height" numeric,
-  	"focal_x" numeric,
-  	"focal_y" numeric
+     "id" serial PRIMARY KEY NOT NULL,
+     "standard_id" integer,
+     "year" numeric,
+     "is_current" boolean DEFAULT false,
+     "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+     "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+     "_status" "enum_reference_certificates_status" DEFAULT 'draft',
+     "url" varchar,
+     "thumbnail_u_r_l" varchar,
+     "filename" varchar,
+     "mime_type" varchar,
+     "filesize" numeric,
+     "width" numeric,
+     "height" numeric,
+     "focal_x" numeric,
+     "focal_y" numeric
   );
-  
+
   CREATE TABLE "_reference_certificates_v" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"parent_id" integer,
-  	"version_standard_id" integer,
-  	"version_year" numeric,
-  	"version_is_current" boolean DEFAULT false,
-  	"version_updated_at" timestamp(3) with time zone,
-  	"version_created_at" timestamp(3) with time zone,
-  	"version__status" "enum__reference_certificates_v_version_status" DEFAULT 'draft',
-  	"version_url" varchar,
-  	"version_thumbnail_u_r_l" varchar,
-  	"version_filename" varchar,
-  	"version_mime_type" varchar,
-  	"version_filesize" numeric,
-  	"version_width" numeric,
-  	"version_height" numeric,
-  	"version_focal_x" numeric,
-  	"version_focal_y" numeric,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"latest" boolean
+     "id" serial PRIMARY KEY NOT NULL,
+     "parent_id" integer,
+     "version_standard_id" integer,
+     "version_year" numeric,
+     "version_is_current" boolean DEFAULT false,
+     "version_updated_at" timestamp(3) with time zone,
+     "version_created_at" timestamp(3) with time zone,
+     "version__status" "enum__reference_certificates_v_version_status" DEFAULT 'draft',
+     "version_url" varchar,
+     "version_thumbnail_u_r_l" varchar,
+     "version_filename" varchar,
+     "version_mime_type" varchar,
+     "version_filesize" numeric,
+     "version_width" numeric,
+     "version_height" numeric,
+     "version_focal_x" numeric,
+     "version_focal_y" numeric,
+     "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+     "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+     "latest" boolean
   );
-  
+
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "reference_standards_id" integer;
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "reference_certificates_id" integer;
   ALTER TABLE "reference_certificates" ADD CONSTRAINT "reference_certificates_standard_id_reference_standards_id_fk" FOREIGN KEY ("standard_id") REFERENCES "public"."reference_standards"("id") ON DELETE set null ON UPDATE no action;
@@ -102,9 +102,9 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "reference_certificates" CASCADE;
   DROP TABLE "_reference_certificates_v" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_reference_standards_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_reference_certificates_fk";
-  
+
   DROP INDEX "payload_locked_documents_rels_reference_standards_id_idx";
   DROP INDEX "payload_locked_documents_rels_reference_certificates_id_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "reference_standards_id";

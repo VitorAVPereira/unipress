@@ -91,7 +91,14 @@ export function buildPublicReferenceStandards(
           return createdDifference || right.id.localeCompare(left.id, 'pt-BR', { numeric: true })
         })
 
-      const publicCertificate = ({ createdAt: _createdAt, ...certificate }: LabelledCertificate) => certificate
+      const publicCertificate = (certificate: LabelledCertificate): PublicReferenceCertificate => ({
+        id: certificate.id,
+        year: certificate.year,
+        label: certificate.label,
+        isCurrent: certificate.isCurrent,
+        viewHref: certificate.viewHref,
+        downloadHref: certificate.downloadHref,
+      })
 
       return {
         id: String(standard.id),
