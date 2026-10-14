@@ -1,6 +1,8 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, GlobalAfterChangeHook } from 'payload'
 
+import { isReferenceCertificateDraftOperation } from '@/hooks/referenceCertificates'
+
 function revalidate(paths: Array<string | undefined>) {
   paths.filter((path): path is string => Boolean(path)).forEach((path) => revalidatePath(path))
 }
@@ -28,6 +30,31 @@ export const revalidateService: CollectionAfterChangeHook = ({ doc, previousDoc,
 
 export const revalidateDeletedService: CollectionAfterDeleteHook = ({ doc, req }) => {
   if (!req.context?.disableRevalidate) revalidate(['/', '/servicos', '/sitemap.xml', doc.slug && `/servicos/${doc.slug}`])
+  return doc
+}
+
+export const revalidateReferenceCertificate: CollectionAfterChangeHook = ({ doc, previousDoc, req }) => {
+  const affectsPublishedContent = doc._status === 'published' || previousDoc?._status === 'published'
+  if (!req.context?.skipReferenceCertificateLifecycle && !isReferenceCertificateDraftOperation(req) && affectsPublishedContent) {
+    revalidate(['/certificados-padroes'])
+  }
+  return doc
+}
+
+export const revalidateDeletedReferenceCertificate: CollectionAfterDeleteHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle && doc._status === 'published') {
+    revalidate(['/certificados-padroes'])
+  }
+  return doc
+}
+
+export const revalidateReferenceStandard: CollectionAfterChangeHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle) revalidate(['/certificados-padroes'])
+  return doc
+}
+
+export const revalidateDeletedReferenceStandard: CollectionAfterDeleteHook = ({ doc, req }) => {
+  if (!req.context?.skipReferenceCertificateLifecycle) revalidate(['/certificados-padroes'])
   return doc
 }
 

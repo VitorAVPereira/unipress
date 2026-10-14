@@ -1,0 +1,202 @@
+diff --git a/dist/adapter.js b/dist/adapter.js
+index 7c08de8d0b581327114f868ae69858cccef120ec..24cd2c4a6c28ea3dd8a4dc29ca456b32ef06b612 100644
+--- a/dist/adapter.js
++++ b/dist/adapter.js
+@@ -40,6 +40,7 @@ export function createVercelBlobAdapter({ access, addRandomSuffix, baseUrl, cach
+                 return data;
+             },
+             staticHandler: (req, { headers, params: { clientUploadContext, filename, prefix: prefixQueryParam } })=>getFile({
++                    access,
+                     baseUrl,
+                     cacheControlMaxAge,
+                     clientUploadContext,
+diff --git a/dist/client/VercelBlobClientUploadHandler.d.ts b/dist/client/VercelBlobClientUploadHandler.d.ts
+index b3b021ebd932ab8c6bb0b5abf829dae0f91a2396..f088388c847bdbdaf7152eb6804491ab831e2613 100644
+--- a/dist/client/VercelBlobClientUploadHandler.d.ts
++++ b/dist/client/VercelBlobClientUploadHandler.d.ts
+@@ -1,4 +1,5 @@
+ export type VercelBlobClientUploadHandlerExtra = {
++    access: import('@vercel/blob').BlobAccessType;
+     addRandomSuffix: boolean;
+     useCompositePrefixes: boolean;
+ };
+diff --git a/dist/client/VercelBlobClientUploadHandler.js b/dist/client/VercelBlobClientUploadHandler.js
+index a988c0f3c2757be128567fe0c175cbc3f023ff8e..04a59bcbf719648322e2d67b67e467b1f70ce62e 100644
+--- a/dist/client/VercelBlobClientUploadHandler.js
++++ b/dist/client/VercelBlobClientUploadHandler.js
+@@ -8,7 +8,7 @@ import { formatAdminURL } from 'payload/shared';
+     return lastSlash === -1 ? normalized : normalized.slice(lastSlash + 1);
+ }
+ export const VercelBlobClientUploadHandler = createClientUploadHandler({
+-    handler: async ({ apiRoute, collectionSlug, docPrefix, extra: { addRandomSuffix, useCompositePrefixes = false }, file, prefix, serverHandlerPath, serverURL, updateFilename })=>{
++    handler: async ({ apiRoute, collectionSlug, docPrefix, extra: { access, addRandomSuffix, useCompositePrefixes = false }, file, prefix, serverHandlerPath, serverURL, updateFilename })=>{
+         const endpointRoute = formatAdminURL({
+             apiRoute,
+             path: serverHandlerPath,
+@@ -22,10 +22,11 @@ export const VercelBlobClientUploadHandler = createClientUploadHandler({
+         });
+         // upload the file directly to Vercel Blob using the signed URL
+         const result = await upload(pathname, file, {
+-            access: 'public',
++            access,
+             clientPayload: collectionSlug,
+             contentType: file.type,
+-            handleUploadUrl: endpointRoute
++            handleUploadUrl: endpointRoute,
++            multipart: file.size > 5 * 1024 * 1024
+         });
+         // Match server uploadFile: document `filename` is basename only; prefixes are separate.
+         if (addRandomSuffix) {
+diff --git a/dist/getClientUploadRoute.d.ts b/dist/getClientUploadRoute.d.ts
+index b0d9157554801e9a873ad09c1ace7c6c5db43a90..35a798f0a4884dc54afc6ce30f1f722320878020 100644
+--- a/dist/getClientUploadRoute.d.ts
++++ b/dist/getClientUploadRoute.d.ts
+@@ -4,8 +4,10 @@ type Args = {
+         collectionSlug: UploadCollectionSlug;
+         req: PayloadRequest;
+     }) => boolean | Promise<boolean>;
++    allowedContentTypes?: string[];
+     addRandomSuffix?: boolean;
+     cacheControlMaxAge?: number;
++    maximumSizeInBytes?: number;
+     token: string;
+ };
+ export declare const getClientUploadRoute: ({ access, addRandomSuffix, cacheControlMaxAge, token }: Args) => PayloadHandler;
+diff --git a/dist/getClientUploadRoute.js b/dist/getClientUploadRoute.js
+index 9d171720abf1b787bdc40c9025545b14ea51dd1f..7116408520606f1580635fe0860c3566233bb841 100644
+--- a/dist/getClientUploadRoute.js
++++ b/dist/getClientUploadRoute.js
+@@ -1,7 +1,7 @@
+ import { handleUpload } from '@vercel/blob/client';
+ import { APIError, Forbidden } from 'payload';
+ const defaultAccess = ({ req })=>!!req.user;
+-export const getClientUploadRoute = ({ access = defaultAccess, addRandomSuffix, cacheControlMaxAge, token })=>async (req)=>{
++export const getClientUploadRoute = ({ access = defaultAccess, allowedContentTypes, addRandomSuffix, cacheControlMaxAge, maximumSizeInBytes, token })=>async (req)=>{
+         const body = await req.json();
+         try {
+             const jsonResponse = await handleUpload({
+@@ -18,8 +18,10 @@ export const getClientUploadRoute = ({ access = defaultAccess, addRandomSuffix,
+                     }
+                     return Promise.resolve({
+                         addRandomSuffix,
++                        allowedContentTypes,
+                         allowOverwrite: true,
+-                        cacheControlMaxAge
++                        cacheControlMaxAge,
++                        maximumSizeInBytes
+                     });
+                 },
+                 onUploadCompleted: async ()=>{},
+diff --git a/dist/getFile.d.ts b/dist/getFile.d.ts
+index f5b457bcc0ebd06ac9bb8fb099818ab85781f866..214711545b00cc770c7f84bb5c6f9b8303e72c73 100644
+--- a/dist/getFile.d.ts
++++ b/dist/getFile.d.ts
+@@ -1,5 +1,7 @@
+ import type { CollectionConfig, PayloadRequest } from 'payload';
++import type { BlobAccessType } from '@vercel/blob';
+ interface GetFileArgs {
++    access: BlobAccessType;
+     baseUrl: string;
+     cacheControlMaxAge: number;
+     clientUploadContext?: unknown;
+diff --git a/dist/getFile.js b/dist/getFile.js
+index bec12b0b2e3ce300c8e5ce8fcbe2f4ecd2c86582..cb67464eb5cd94f33533645156b8768da7b8dcce 100644
+--- a/dist/getFile.js
++++ b/dist/getFile.js
+@@ -1,8 +1,8 @@
+ import { getFilePrefix as getDocPrefix } from '@payloadcms/plugin-cloud-storage/utilities';
+-import { BlobNotFoundError, head } from '@vercel/blob';
++import { BlobNotFoundError, get, head } from '@vercel/blob';
+ import { getRangeRequestInfo } from 'payload/internal';
+ import { generateURL } from './generateURL.js';
+-export async function getFile({ baseUrl, cacheControlMaxAge, clientUploadContext, collection, collectionPrefix = '', filename, incomingHeaders, prefixQueryParam, req, token, useCompositePrefixes = false }) {
++export async function getFile({ access, baseUrl, cacheControlMaxAge, clientUploadContext, collection, collectionPrefix = '', filename, incomingHeaders, prefixQueryParam, req, token, useCompositePrefixes = false }) {
+     try {
+         const docPrefix = await getDocPrefix({
+             clientUploadContext,
+@@ -18,6 +18,28 @@ export async function getFile({ baseUrl, cacheControlMaxAge, clientUploadContext
+             prefix: docPrefix,
+             useCompositePrefixes
+         });
++        if (access === 'private') {
++            const result = await get(fileUrl, {
++                access: 'private',
++                token,
++                useCache: false
++            });
++            if (!result) {
++                return new Response(null, {
++                    status: 404,
++                    statusText: 'Not Found'
++                });
++            }
++            const headers = new Headers(incomingHeaders);
++            headers.set('Cache-Control', 'private, no-store');
++            headers.set('Content-Disposition', result.blob.contentDisposition);
++            headers.set('Content-Type', result.blob.contentType || 'application/octet-stream');
++            headers.set('ETag', result.blob.etag);
++            return new Response(result.stream, {
++                headers,
++                status: result.statusCode
++            });
++        }
+         const etagFromHeaders = req.headers.get('etag') || req.headers.get('if-none-match');
+         const blobMetadata = await head(fileUrl, {
+             token
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 42bc409877a795be084492014f7818286c4f92ff..008359053210d01fb4aec15afd27542be30596c9 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,4 +1,5 @@
+ import type { ClientUploadsConfig, CollectionOptions } from '@payloadcms/plugin-cloud-storage/types';
++import type { BlobAccessType } from '@vercel/blob';
+ import type { Plugin, UploadCollectionSlug } from 'payload';
+ export type VercelBlobStorageOptions = {
+     /**
+@@ -7,7 +8,7 @@ export type VercelBlobStorageOptions = {
+      *
+      * @default 'public'
+      */
+-    access?: 'public';
++    access?: BlobAccessType;
+     /**
+      * Add a random suffix to the uploaded file name in Vercel Blob storage
+      *
+@@ -34,6 +35,12 @@ export type VercelBlobStorageOptions = {
+      * Do uploads directly on the client, to bypass limits on Vercel.
+      */
+     clientUploads?: ClientUploadsConfig;
++    /** Limits and route used when files are uploaded directly from the browser. */
++    clientUpload?: {
++        allowedContentTypes?: string[];
++        maximumSizeInBytes?: number;
++        serverHandlerPath?: `/${string}`;
++    };
+     /**
+      * Collections to apply the Vercel Blob adapter to
+      */
+diff --git a/dist/index.js b/dist/index.js
+index 90888ac80eda32c21fae7f511296dbff1f93c9f8..bd4cce11e309136d9d2fa3a68ccaee00a3848da4 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -28,16 +28,19 @@ export const vercelBlobStorage = (options)=>(incomingConfig)=>{
+             config: incomingConfig,
+             enabled: !isPluginDisabled && Boolean(options.clientUploads),
+             extraClientHandlerProps: ()=>({
++                    access: optionsWithDefaults.access,
+                     addRandomSuffix: !!optionsWithDefaults.addRandomSuffix,
+                     useCompositePrefixes: !!options.useCompositePrefixes
+                 }),
+             serverHandler: getClientUploadRoute({
+                 access: typeof options.clientUploads === 'object' ? options.clientUploads.access : undefined,
++                allowedContentTypes: options.clientUpload?.allowedContentTypes,
+                 addRandomSuffix: optionsWithDefaults.addRandomSuffix,
+                 cacheControlMaxAge: options.cacheControlMaxAge,
++                maximumSizeInBytes: options.clientUpload?.maximumSizeInBytes,
+                 token: options.token ?? ''
+             }),
+-            serverHandlerPath: '/vercel-blob-client-upload-route'
++            serverHandlerPath: options.clientUpload?.serverHandlerPath ?? '/vercel-blob-client-upload-route'
+         });
+         // If the plugin is disabled or no token is provided, do not enable the plugin
+         if (isPluginDisabled) {

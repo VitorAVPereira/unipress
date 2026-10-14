@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { Client } from 'pg'
 
 test.describe('site UniPress', () => {
   test('apresenta a empresa e a navegação principal', async ({ page }) => {
@@ -113,6 +114,115 @@ test.describe('site UniPress', () => {
   test('oferece estado 404 para páginas inexistentes', async ({ page }) => {
     await page.goto('/pagina-inexistente')
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/não.*encontrada/i)
+  })
+
+  test('mantém a página de certificados dos padrões acessível e não indexada', async ({ page, request }) => {
+    const response = await page.goto('/certificados-padroes')
+
+    expect(response?.status()).toBe(200)
+    expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow')
+    await expect(page.getByRole('heading', { level: 1, name: 'Certificados dos padrões UniPress.' })).toBeVisible()
+    await expect(page.locator('.site-header')).toBeVisible()
+    await expect(page.locator('.site-footer')).toBeVisible()
+    await expect(page.locator('nav a[href="/certificados-padroes"]')).toHaveCount(0)
+
+    const sitemap = await request.get('/sitemap.xml')
+    expect(await sitemap.text()).not.toContain('/certificados-padroes')
+
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag22aa']).analyze()
+    expect(results.violations).toEqual([])
+  })
+
+  test('consulta TAGs e acessa certificado atual e histórico no desktop e no celular', async ({ page }) => {
+    test.setTimeout(120_000)
+
+    const databaseURL = process.env.DATABASE_URL
+    if (!databaseURL) throw new Error('DATABASE_URL é obrigatória para o teste E2E de certificados dos padrões.')
+
+    const database = new Client({ connectionString: databaseURL })
+    await database.connect()
+    const run = Date.now().toString(36)
+    const primaryTag = `E2E-${run}-20`
+    const secondaryTag = `E2E-${run}-30`
+    const primaryKey = `e2e${run}20`
+    const secondaryKey = `e2e${run}30`
+
+    const cleanupFixtures = async () => {
+      await database.query(
+        `
+        DELETE FROM "reference_certificates"
+        WHERE "standard_id" IN (
+          SELECT "id" FROM "reference_standards" WHERE "search_key" IN ($1, $2)
+        )
+        `,
+        [primaryKey, secondaryKey],
+      )
+      await database.query('DELETE FROM "reference_standards" WHERE "search_key" IN ($1, $2)', [
+        primaryKey,
+        secondaryKey,
+      ])
+    }
+
+    await cleanupFixtures()
+    try {
+      await page.goto(`/certificados-padroes?estado-vazio=${run}`)
+      await expect(page.getByRole('heading', { name: 'Nenhum certificado está disponível.' })).toBeVisible()
+
+      const firstStandard = await database.query<{ id: number }>(
+        `
+        INSERT INTO "reference_standards" ("tag", "search_key", "visible")
+        VALUES ($1, $2, true)
+        RETURNING "id"
+        `,
+        [primaryTag, primaryKey],
+      )
+      const secondStandard = await database.query<{ id: number }>(
+        `
+        INSERT INTO "reference_standards" ("tag", "search_key", "visible")
+        VALUES ($1, $2, true)
+        RETURNING "id"
+        `,
+        [secondaryTag, secondaryKey],
+      )
+      const firstID = firstStandard.rows[0].id
+      const secondID = secondStandard.rows[0].id
+
+      await database.query(
+        `
+        INSERT INTO "reference_certificates"
+          ("standard_id", "year", "is_current", "_status", "filename", "mime_type", "filesize")
+        VALUES
+          ($1, 2025, false, 'published', $3, 'application/pdf', 100),
+          ($1, 2026, true, 'published', $4, 'application/pdf', 100),
+          ($2, 2026, true, 'published', $5, 'application/pdf', 100)
+        `,
+        [firstID, secondID, `${run}-historico.pdf`, `${run}-atual.pdf`, `${run}-secundario.pdf`],
+      )
+
+      await page.setViewportSize({ width: 1280, height: 900 })
+      await page.goto(`/certificados-padroes?dados=${run}`)
+      const search = page.getByRole('searchbox', { name: 'Pesquisar por TAG' })
+      await expect(search).toBeVisible()
+      await search.fill(` e2e ${run} 20 `)
+      await expect(page.getByRole('heading', { name: primaryTag })).toBeVisible()
+      await expect(page.getByRole('heading', { name: secondaryTag })).toHaveCount(0)
+      await expect(page.getByText('Certificado atual')).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Visualizar Certificado 2026' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Baixar Certificado 2026' })).toBeVisible()
+
+      await page.getByText('Histórico de certificados').click()
+      await expect(page.getByRole('link', { name: 'Visualizar Certificado 2025' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Baixar Certificado 2025' })).toBeVisible()
+
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto(`/certificados-padroes?mobile=${run}`)
+      await expect(page.getByRole('searchbox', { name: 'Pesquisar por TAG' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: primaryTag })).toBeVisible()
+      await expect(page.getByRole('heading', { name: secondaryTag })).toBeVisible()
+    } finally {
+      await cleanupFixtures()
+      await database.end()
+    }
   })
 
   test('não apresenta violações automáticas WCAG A/AA nas páginas principais', async ({ page }) => {
