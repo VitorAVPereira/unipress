@@ -4,9 +4,10 @@ import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useTransition } from 'react'
 
-import { familyFilterOptions, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
+import { countActiveCatalogFacets, familyFilterOptions, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
 import type { PublicProduct } from '@/lib/cms'
 
+import { MobileFilterPanel } from './MobileFilterPanel'
 import { ProductCard } from './ProductCard'
 
 const fieldLabels: Array<[keyof CatalogFilters, string]> = [
@@ -56,6 +57,35 @@ function optionsFor(products: PublicProduct[], key: keyof CatalogFilters) {
     .map((value) => ({ label: value, value }))
 }
 
+function CatalogFilterFields({
+  products,
+  filters,
+  onToggle,
+}: {
+  products: PublicProduct[]
+  filters: CatalogFilters
+  onToggle: (key: keyof CatalogFilters, value: string) => void
+}) {
+  return fieldLabels.map(([key, label]) => {
+    const options = optionsFor(products, key)
+    if (options.length < 2) return null
+    return (
+      <fieldset className="filter-group" key={key}>
+        <legend>{label}</legend>
+        {options.map((option) => {
+          const checked = ((filters[key] as string[] | undefined) || []).includes(option.value)
+          return (
+            <label key={option.value}>
+              <input type="checkbox" checked={checked} onChange={() => onToggle(key, option.value)} />
+              <span>{option.label}</span>
+            </label>
+          )
+        })}
+      </fieldset>
+    )
+  })
+}
+
 export function CatalogClient({ products }: { products: PublicProduct[] }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -76,6 +106,7 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
   }
 
   const hasFilters = writeCatalogFilters(filters).size > 0
+  const activeFacetCount = countActiveCatalogFacets(filters)
 
   if (products.length === 0) {
     return (
@@ -89,26 +120,9 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
 
   return (
     <div className={`catalog-layout ${isPending ? 'is-pending' : ''}`}>
-      <aside className="filters" aria-label="Filtros do catálogo">
+      <aside className="filters desktop-filters" aria-label="Filtros do catálogo">
         <div className="filter-heading"><SlidersHorizontal size={18} /><strong>Filtrar produtos</strong></div>
-        {fieldLabels.map(([key, label]) => {
-          const options = optionsFor(products, key)
-          if (options.length < 2) return null
-          return (
-            <fieldset className="filter-group" key={key}>
-              <legend>{label}</legend>
-              {options.map((option) => {
-                const checked = ((filters[key] as string[] | undefined) || []).includes(option.value)
-                return (
-                  <label key={option.value}>
-                    <input type="checkbox" checked={checked} onChange={() => toggle(key, option.value)} />
-                    <span>{option.label}</span>
-                  </label>
-                )
-              })}
-            </fieldset>
-          )
-        })}
+        <CatalogFilterFields products={products} filters={filters} onToggle={toggle} />
       </aside>
 
       <div className="catalog-results">
@@ -124,6 +138,9 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
               onChange={(event) => update({ ...filters, query: event.target.value || undefined })}
             />
           </label>
+          <MobileFilterPanel activeCount={activeFacetCount} onApply={() => undefined} onClear={() => update({})}>
+            <CatalogFilterFields products={products} filters={filters} onToggle={toggle} />
+          </MobileFilterPanel>
           <div className="result-count" aria-live="polite">
             <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'produto' : 'produtos'}
           </div>

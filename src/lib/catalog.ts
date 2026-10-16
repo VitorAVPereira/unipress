@@ -71,6 +71,10 @@ const facetKeys = [
   'compatibility',
 ] as const
 
+export function countActiveCatalogFacets(filters: CatalogFilters): number {
+  return facetKeys.reduce((count, key) => count + (filters[key]?.length || 0), 0)
+}
+
 const productFacet: Record<(typeof facetKeys)[number], keyof CatalogProduct> = {
   families: 'family',
   categories: 'category',
