@@ -71,6 +71,18 @@ test.describe('site UniPress', () => {
     await expect(page.getByRole('searchbox', { name: 'Buscar produtos' })).toHaveCount(0)
   })
 
+  test('mantém a faixa decorativa do catálogo fora do título em telas intermediárias', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    await page.goto('/produtos')
+
+    const title = await page.getByRole('heading', {
+      name: 'Encontre a configuração certa para a sua aplicação.',
+    }).boundingBox()
+
+    expect(title).not.toBeNull()
+    expect(title!.x + title!.width).toBeLessThan(1024 * 0.82 - 24)
+  })
+
   test('oferece contato direto por WhatsApp sem formulário de e-mail', async ({ page }) => {
     await page.goto('/contato')
 

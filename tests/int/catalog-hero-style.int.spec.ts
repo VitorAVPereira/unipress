@@ -9,5 +9,7 @@ describe('faixa decorativa do catálogo técnico', () => {
     expect(stylesheet).toContain(
       '.page-hero-products { background-image: linear-gradient(90deg, #f5f5f3 0 82%, #ececea 82%); }',
     )
+    expect(stylesheet).toContain('.page-hero-products h1 { max-width: min(900px, 72vw); }')
+    expect(stylesheet).toContain('.page-hero-products { background: var(--surface); }')
   })
 })

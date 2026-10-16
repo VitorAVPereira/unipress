@@ -198,6 +198,7 @@ p { margin: 0; color: var(--muted); }
 .page-hero h1 { max-width: 900px; margin-top: 18px; font-size: clamp(2.8rem, 5vw, 4.8rem); }
 .page-hero p { max-width: 700px; margin-top: 20px; font-size: 1.05rem; }
 .page-hero-products { background-image: linear-gradient(90deg, #f5f5f3 0 82%, #ececea 82%); }
+.page-hero-products h1 { max-width: min(900px, 72vw); }
 .service-page-hero { color: white; background: var(--ink); }
 .service-page-hero .eyebrow { color: #fff; }
 .service-page-hero p { color: #b5b8bd; }
@@ -477,6 +478,8 @@ p { margin: 0; color: var(--muted); }
   }
   .section { padding-block: clamp(56px, 10vw, 78px); }
   .page-hero { padding-block: 64px 56px; }
+  .page-hero-products { background: var(--surface); }
+  .page-hero-products h1 { max-width: 900px; }
   .page-hero h1, .detail-copy h1, .service-detail-hero h1 { font-size: clamp(2.15rem, 10vw, 3.5rem); }
   .hero { background: linear-gradient(#fff 0 62%, #f2f2f0 62%); }
   .hero-grid { grid-template-columns: 1fr; }
