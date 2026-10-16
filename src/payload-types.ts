@@ -336,6 +336,7 @@ export interface FolderInterface {
  */
 export interface Product {
   id: number;
+  _order?: string | null;
   name: string;
   slug: string;
   code: string;
@@ -915,6 +916,7 @@ export interface ProductCategoriesSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   slug?: T;
   code?: T;
