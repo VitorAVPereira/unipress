@@ -4,14 +4,13 @@ import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useTransition } from 'react'
 
-import { countActiveCatalogFacets, familyFilterOptions, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
+import { countActiveCatalogFacets, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
 import type { PublicProduct } from '@/lib/cms'
 
 import { MobileFilterPanel } from './MobileFilterPanel'
 import { ProductCard } from './ProductCard'
 
 const fieldLabels: Array<[keyof CatalogFilters, string]> = [
-  ['families', 'Família'],
   ['categories', 'Categoria'],
   ['pressureRanges', 'Faixa de pressão'],
   ['pressureUnits', 'Unidade'],
@@ -28,7 +27,6 @@ const fieldLabels: Array<[keyof CatalogFilters, string]> = [
 ]
 
 const productField: Partial<Record<keyof CatalogFilters, keyof PublicProduct>> = {
-  families: 'family',
   categories: 'category',
   pressureRanges: 'pressureRanges',
   pressureUnits: 'pressureUnits',
@@ -45,7 +43,6 @@ const productField: Partial<Record<keyof CatalogFilters, keyof PublicProduct>> =
 }
 
 function optionsFor(products: PublicProduct[], key: keyof CatalogFilters) {
-  if (key === 'families') return familyFilterOptions(products)
   const field = productField[key]
   if (!field) return []
   const values = products.flatMap((product) => {

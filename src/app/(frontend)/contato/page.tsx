@@ -16,7 +16,7 @@ export default async function ContactPage() {
   const draft = (await draftMode()).isEnabled
   const [settings, content] = await Promise.all([getSiteSettings(), getContactContent({ draft })])
   const whatsapp = buildWhatsAppOrContactURL(settings.whatsapp || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '')
-  const contactFormEnabled = isContactFormEnabled()
+  const contactFormEnabled = isContactFormEnabled(process.env, settings.email)
   return (
     <>
       <section className="page-hero contact-hero"><div className="container"><span className="eyebrow">Fale com a UniPress</span><h1>{content.title}</h1><p>{content.description}</p></div></section>

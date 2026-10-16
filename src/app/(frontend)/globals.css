@@ -164,7 +164,6 @@ p { margin: 0; color: var(--muted); }
 .category-card h3 { margin-top: 8px; font-size: 2.4rem; }
 .category-card p { max-width: 440px; margin-top: 12px; }
 .category-card strong { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; font-size: .85rem; }
-.category-number { position: absolute; top: 28px; left: 34px; z-index: 4; font: 700 .8rem var(--font-display); }
 .category-dark { color: white; background: #181a1d; }
 .category-dark p { color: #aeb1b7; }
 .category-dark .gauge { position: absolute; right: 20px; top: 15px; transform: scale(.85); transform-origin: top right; opacity: .88; }
@@ -198,7 +197,7 @@ p { margin: 0; color: var(--muted); }
 .page-hero { padding-block: 95px 88px; background: var(--surface); border-bottom: 1px solid var(--line); }
 .page-hero h1 { max-width: 900px; margin-top: 18px; font-size: clamp(2.8rem, 5vw, 4.8rem); }
 .page-hero p { max-width: 700px; margin-top: 20px; font-size: 1.05rem; }
-.page-hero-products { background-image: linear-gradient(90deg, #f5f5f3 0 70%, #ececea 70%); }
+.page-hero-products { background-image: linear-gradient(90deg, #f5f5f3 0 82%, #ececea 82%); }
 .service-page-hero { color: white; background: var(--ink); }
 .service-page-hero .eyebrow { color: #fff; }
 .service-page-hero p { color: #b5b8bd; }

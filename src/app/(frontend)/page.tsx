@@ -153,7 +153,6 @@ export default async function HomePage() {
         </div>
         <div className="category-grid">
           <Link className="category-card category-dark" href="/produtos?familia=manometro">
-            <div className="category-number">01</div>
             {manometersImage ? (
               <div className="category-image-frame">
                 <Image
@@ -177,7 +176,6 @@ export default async function HomePage() {
             </div>
           </Link>
           <Link className="category-card category-light" href="/produtos?familia=acessorio">
-            <div className="category-number">02</div>
             {accessoriesImage ? (
               <div className="category-image-frame">
                 <Image

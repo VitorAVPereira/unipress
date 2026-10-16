@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 
 import { processContactSubmission, statusForContactCode, type ContactPayload } from '@/lib/contact'
+import { getSiteSettings } from '@/lib/cms'
 
 export const runtime = 'nodejs'
 
@@ -21,8 +22,9 @@ async function verifyTurnstile(token: string) {
 
 async function deliverEmail(data: ContactPayload) {
   const apiKey = process.env.RESEND_API_KEY
-  const to = process.env.CONTACT_TO_EMAIL
   const from = process.env.RESEND_FROM_EMAIL
+  const settings = await getSiteSettings()
+  const to = settings.email?.trim()
 
   if (!apiKey || !to || !from) {
     if (process.env.NODE_ENV !== 'production') return
