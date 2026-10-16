@@ -91,12 +91,14 @@ test.describe('site UniPress', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
 
-    const menu = page.locator('summary[aria-label="Abrir menu"]')
+    const menu = page.getByRole('button', { name: 'Abrir menu' })
     await menu.focus()
     await menu.press('Enter')
-    await expect(page.getByRole('navigation', { name: 'Principal' }).last()).toBeVisible()
-    await page.getByRole('navigation', { name: 'Principal' }).last().getByRole('link', { name: 'Produtos' }).click()
+    const mobileNavigation = page.getByRole('navigation', { name: 'Menu móvel' })
+    await expect(mobileNavigation).toBeVisible()
+    await mobileNavigation.getByRole('link', { name: 'Produtos' }).click()
     await expect(page).toHaveURL('/produtos')
+    await expect(page.getByRole('navigation', { name: 'Menu móvel' })).toHaveCount(0)
   })
 
   test('oferece entrada privada sem cadastro público', async ({ page }) => {

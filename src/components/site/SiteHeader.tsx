@@ -1,9 +1,10 @@
-import { Menu, MessageCircle } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 
 import { buildWhatsAppOrContactURL } from '@/lib/whatsapp'
 
 import { Logo } from './Logo'
+import { MobileMenu } from './MobileMenu'
 
 const defaultLinks = [
   ['Produtos', '/produtos'],
@@ -25,13 +26,7 @@ export function SiteHeader({ whatsapp, logo, links = defaultLinks }: { whatsapp:
         <a className="button button-primary header-cta" href={whatsappURL} target="_blank" rel="noreferrer">
           <MessageCircle size={18} aria-hidden="true" /> Fale conosco
         </a>
-        <details className="mobile-menu">
-          <summary aria-label="Abrir menu"><Menu aria-hidden="true" /></summary>
-          <nav aria-label="Principal">
-            {links.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
-            <a href={whatsappURL} target="_blank" rel="noreferrer">Fale no WhatsApp</a>
-          </nav>
-        </details>
+        <MobileMenu links={links} whatsappURL={whatsappURL} />
       </div>
     </header>
   )
