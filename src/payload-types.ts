@@ -68,8 +68,9 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    products: Product;
+    'product-families': ProductFamily;
     'product-categories': ProductCategory;
+    products: Product;
     services: Service;
     media: Media;
     documents: Document;
@@ -92,8 +93,9 @@ export interface Config {
     };
   };
   collectionsSelect: {
-    products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-families': ProductFamiliesSelect<false> | ProductFamiliesSelect<true>;
     'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
@@ -184,128 +186,15 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
+ * via the `definition` "product-families".
  */
-export interface Product {
+export interface ProductFamily {
   id: number;
   name: string;
   slug: string;
-  code: string;
-  family: 'manometro' | 'acessorio';
-  category: number | ProductCategory;
-  summary: string;
-  description: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  gallery?: (number | Media)[] | null;
-  technicalDocument?: (number | null) | Document;
-  applications?:
-    | {
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  manometerSpecs?: {
-    pressureRanges?:
-      | {
-          label: string;
-          minimum?: number | null;
-          maximum?: number | null;
-          unit: string;
-          id?: string | null;
-        }[]
-      | null;
-    diameters?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    accuracyClasses?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    connections?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    connectionPositions?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    caseMaterials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    wettedMaterials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    fillings?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    protectionRatings?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  accessorySpecs?: {
-    type?: string | null;
-    connections?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    materials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    maximumPressure?: string | null;
-    compatibility?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-    image?: (number | null) | Media;
-  };
+  technicalProfile: 'manometro' | 'acessorio' | 'generico';
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -315,7 +204,7 @@ export interface ProductCategory {
   id: number;
   name: string;
   slug: string;
-  family: 'manometro' | 'acessorio';
+  family: number | ProductFamily;
   summary: string;
   image?: (number | null) | Media;
   order: number;
@@ -440,6 +329,132 @@ export interface FolderInterface {
   folderType?: 'media'[] | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  code: string;
+  family: number | ProductFamily;
+  familyProfile: 'manometro' | 'acessorio' | 'generico';
+  category: number | ProductCategory;
+  summary: string;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  gallery?: (number | Media)[] | null;
+  technicalDocument?: (number | null) | Document;
+  applications?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  manometerSpecs?: {
+    pressureRanges?:
+      | {
+          label: string;
+          minimum?: number | null;
+          maximum?: number | null;
+          unit: string;
+          id?: string | null;
+        }[]
+      | null;
+    diameters?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    accuracyClasses?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    connections?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    connectionPositions?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    caseMaterials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    wettedMaterials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    fillings?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    protectionRatings?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  accessorySpecs?: {
+    type?: string | null;
+    connections?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    materials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    maximumPressure?: string | null;
+    compatibility?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -767,12 +782,16 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'products';
-        value: number | Product;
+        relationTo: 'product-families';
+        value: number | ProductFamily;
       } | null)
     | ({
         relationTo: 'product-categories';
         value: number | ProductCategory;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'services';
@@ -868,6 +887,31 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-families_select".
+ */
+export interface ProductFamiliesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  technicalProfile?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-categories_select".
+ */
+export interface ProductCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  family?: T;
+  summary?: T;
+  image?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -875,6 +919,7 @@ export interface ProductsSelect<T extends boolean = true> {
   slug?: T;
   code?: T;
   family?: T;
+  familyProfile?: T;
   category?: T;
   summary?: T;
   description?: T;
@@ -981,20 +1026,6 @@ export interface ProductsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-categories_select".
- */
-export interface ProductCategoriesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  family?: T;
-  summary?: T;
-  image?: T;
-  order?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

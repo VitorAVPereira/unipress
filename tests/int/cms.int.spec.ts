@@ -18,6 +18,7 @@ describe('CMS UniPress', () => {
         'media',
         'documents',
         'product-categories',
+        'product-families',
         'products',
         'services',
         'clients',

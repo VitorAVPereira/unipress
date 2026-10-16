@@ -7,6 +7,30 @@ function revalidate(paths: Array<string | undefined>) {
   paths.filter((path): path is string => Boolean(path)).forEach((path) => revalidatePath(path))
 }
 
+export function productFamilyPaths(slugs: string[]) {
+  return ['/produtos', ...slugs.map((slug) => `/produtos/${slug}`)]
+}
+
+export const revalidateProductFamily: CollectionAfterChangeHook = async ({ doc, req }) => {
+  if (req.context?.disableRevalidate) return doc
+  const related = await req.payload.find({
+    collection: 'products',
+    depth: 0,
+    limit: 0,
+    pagination: false,
+    req,
+    select: { slug: true },
+    where: { family: { equals: doc.id } },
+  })
+  revalidate(productFamilyPaths(related.docs.map((product) => product.slug)))
+  return doc
+}
+
+export const revalidateDeletedProductFamily: CollectionAfterDeleteHook = ({ doc, req }) => {
+  if (!req.context?.disableRevalidate) revalidate(['/produtos'])
+  return doc
+}
+
 export const revalidateProduct: CollectionAfterChangeHook = ({ doc, previousDoc, req }) => {
   const affectsPublishedContent = doc._status === 'published' || previousDoc?._status === 'published'
   if (!req.context?.disableRevalidate && affectsPublishedContent) {

@@ -10,6 +10,7 @@ import { AuditEvents } from './collections/AuditEvents'
 import { Calibrations } from './collections/Calibrations'
 import { Clients } from './collections/Clients'
 import { Media } from './collections/Media'
+import { ProductFamilies } from './collections/ProductFamilies'
 import { ProductCategories } from './collections/ProductCategories'
 import { Products } from './collections/Products'
 import { ReferenceCertificates } from './collections/ReferenceCertificates'
@@ -80,6 +81,7 @@ export default buildConfig({
       })
     : undefined,
   collections: [
+    ProductFamilies,
     Products,
     ProductCategories,
     Services,
