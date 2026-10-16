@@ -17,10 +17,20 @@ describe('imagem do cabeçalho interno do serviço', () => {
   it('exibe a imagem cadastrada com o texto alternativo', async () => {
     const { ServiceHeroVisual } = await import('@/components/services/ServiceHeroVisual')
 
-    render(<ServiceHeroVisual image={{ url: '/media/calibracao.jpg', alt: 'Laboratório de calibração' }} />)
+    render(
+      <ServiceHeroVisual
+        image={{
+          url: '/media/calibracao.jpg',
+          alt: 'Laboratório de calibração',
+          updatedAt: '2026-10-15T22:00:00.000Z',
+        }}
+      />,
+    )
 
     const image = screen.getByRole('img', { name: 'Laboratório de calibração' })
-    expect(image.getAttribute('src')).toContain('calibracao.jpg')
+    const optimizedSource = new URL(image.getAttribute('src') || '', 'http://localhost').searchParams.get('url')
+    expect(optimizedSource).toContain('calibracao.jpg')
+    expect(optimizedSource).toContain('2026-10-15T22%3A00%3A00.000Z')
     expect(screen.queryByText('RBC')).toBeNull()
   })
 
