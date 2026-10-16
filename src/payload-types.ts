@@ -69,8 +69,8 @@ export interface Config {
   blocks: {};
   collections: {
     'product-families': ProductFamily;
-    'product-categories': ProductCategory;
     products: Product;
+    'product-categories': ProductCategory;
     services: Service;
     media: Media;
     documents: Document;
@@ -94,8 +94,8 @@ export interface Config {
   };
   collectionsSelect: {
     'product-families': ProductFamiliesSelect<false> | ProductFamiliesSelect<true>;
-    'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
@@ -195,6 +195,133 @@ export interface ProductFamily {
   technicalProfile: 'manometro' | 'acessorio' | 'generico';
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  _order?: string | null;
+  name: string;
+  slug: string;
+  code: string;
+  family: number | ProductFamily;
+  familyProfile: 'manometro' | 'acessorio' | 'generico';
+  category: number | ProductCategory;
+  summary: string;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  gallery?: (number | Media)[] | null;
+  technicalDocument?: (number | null) | Document;
+  applications?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  manometerSpecs?: {
+    pressureRanges?:
+      | {
+          label: string;
+          minimum?: number | null;
+          maximum?: number | null;
+          unit: string;
+          id?: string | null;
+        }[]
+      | null;
+    diameters?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    accuracyClasses?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    connections?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    connectionPositions?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    caseMaterials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    wettedMaterials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    fillings?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    protectionRatings?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  accessorySpecs?: {
+    type?: string | null;
+    connections?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    materials?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    maximumPressure?: string | null;
+    compatibility?:
+      | {
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -329,133 +456,6 @@ export interface FolderInterface {
   folderType?: 'media'[] | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: number;
-  _order?: string | null;
-  name: string;
-  slug: string;
-  code: string;
-  family: number | ProductFamily;
-  familyProfile: 'manometro' | 'acessorio' | 'generico';
-  category: number | ProductCategory;
-  summary: string;
-  description: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  gallery?: (number | Media)[] | null;
-  technicalDocument?: (number | null) | Document;
-  applications?:
-    | {
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  manometerSpecs?: {
-    pressureRanges?:
-      | {
-          label: string;
-          minimum?: number | null;
-          maximum?: number | null;
-          unit: string;
-          id?: string | null;
-        }[]
-      | null;
-    diameters?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    accuracyClasses?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    connections?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    connectionPositions?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    caseMaterials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    wettedMaterials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    fillings?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    protectionRatings?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  accessorySpecs?: {
-    type?: string | null;
-    connections?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    materials?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-    maximumPressure?: string | null;
-    compatibility?:
-      | {
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-    image?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -787,12 +787,12 @@ export interface PayloadLockedDocument {
         value: number | ProductFamily;
       } | null)
     | ({
-        relationTo: 'product-categories';
-        value: number | ProductCategory;
-      } | null)
-    | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'product-categories';
+        value: number | ProductCategory;
       } | null)
     | ({
         relationTo: 'services';
@@ -894,20 +894,6 @@ export interface ProductFamiliesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   technicalProfile?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-categories_select".
- */
-export interface ProductCategoriesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  family?: T;
-  summary?: T;
-  image?: T;
-  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1028,6 +1014,20 @@ export interface ProductsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-categories_select".
+ */
+export interface ProductCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  family?: T;
+  summary?: T;
+  image?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

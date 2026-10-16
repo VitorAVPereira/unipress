@@ -10,8 +10,14 @@ async function emittedSQL(run: typeof migration.up | typeof migration.down) {
 }
 
 describe('migração de serviços, famílias e ordem de produtos', () => {
-  it('é registrada depois das migrações existentes', () => {
-    expect(migrations.at(-1)?.name).toBe('20261016_011036_services_families_product_order')
+  it('é registrada depois da migração de certificados e antes do snapshot combinado', () => {
+    const names = migrations.map(({ name }) => name)
+
+    expect(names).toContain('20261016_011036_services_families_product_order')
+    expect(names.indexOf('20261016_011036_services_families_product_order')).toBeGreaterThan(
+      names.indexOf('20261012_233634_certificados_padroes'),
+    )
+    expect(names.at(-1)).toBe('20261016_015705_merge_admin_catalog_reference_snapshot')
   })
 
   it('cria famílias, migra vínculos e preenche a ordem antes de remover colunas antigas', async () => {
