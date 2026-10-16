@@ -28,10 +28,41 @@ const categories = [
   { name: 'Válvulas', slug: 'valvulas', family: 'acessorio' as const, summary: 'Controle e isolamento da linha de pressão.', order: 4 },
 ]
 
+const families = [
+  { name: 'Manômetro', slug: 'manometro', technicalProfile: 'manometro' as const },
+  { name: 'Acessório', slug: 'acessorio', technicalProfile: 'acessorio' as const },
+]
+
+const familyIds = new Map<string, number>()
+for (const family of families) {
+  const existing = await payload.find({ collection: 'product-families', where: { slug: { equals: family.slug } }, limit: 1 })
+  const document = existing.docs[0] || await payload.create({ collection: 'product-families', data: family })
+  familyIds.set(family.slug, document.id)
+}
+
+function demoFamily(value: unknown) {
+  if (typeof value === 'string') {
+    return {
+      slug: value,
+      technicalProfile: value === 'manometro' || value === 'acessorio' ? value : 'generico',
+    } as const
+  }
+  if (value && typeof value === 'object' && 'slug' in value) {
+    const family = value as { slug: string; technicalProfile?: 'manometro' | 'acessorio' | 'generico' }
+    return { slug: family.slug, technicalProfile: family.technicalProfile || 'generico' } as const
+  }
+  return { slug: 'generico', technicalProfile: 'generico' } as const
+}
+
 const categoryIds = new Map<string, number>()
 for (const category of categories) {
   const existing = await payload.find({ collection: 'product-categories', where: { slug: { equals: category.slug } }, limit: 1 })
-  const document = existing.docs[0] || await payload.create({ collection: 'product-categories', data: category })
+  const family = familyIds.get(category.family)
+  if (!family) throw new Error(`Família ausente: ${category.family}`)
+  const document = existing.docs[0] || await payload.create({
+    collection: 'product-categories',
+    data: { ...category, family },
+  })
   categoryIds.set(category.name, document.id)
 }
 
@@ -40,6 +71,10 @@ for (const product of demoProducts) {
   if (existing.docs.length > 0) continue
   const category = categoryIds.get(product.category)
   if (!category) throw new Error(`Categoria ausente: ${product.category}`)
+  const familyReference = demoFamily(product.family)
+  const familySlug = familyReference.slug
+  const family = familyIds.get(familySlug)
+  if (!family) throw new Error(`Família ausente: ${familySlug}`)
 
   await payload.create({
     collection: 'products',
@@ -49,12 +84,13 @@ for (const product of demoProducts) {
       name: product.name,
       slug: product.slug,
       code: product.code,
-      family: product.family,
+      family,
+      familyProfile: familyReference.technicalProfile,
       category,
       summary: product.summary,
       description: richText(product.description),
       applications: product.applications.map((value) => ({ value })),
-      manometerSpecs: product.family === 'manometro' ? {
+      manometerSpecs: familySlug === 'manometro' ? {
         pressureRanges: product.pressureRanges?.map((label) => ({ label, unit: label.split(' ').at(-1) || 'bar' })),
         diameters: product.diameters.map((value) => ({ value })),
         accuracyClasses: product.accuracyClasses.map((value) => ({ value })),
@@ -64,7 +100,7 @@ for (const product of demoProducts) {
         fillings: product.fillings.map((value) => ({ value })),
         protectionRatings: product.protectionRatings?.map((value) => ({ value })),
       } : undefined,
-      accessorySpecs: product.family === 'acessorio' ? {
+      accessorySpecs: familySlug === 'acessorio' ? {
         type: product.accessoryTypes?.[0],
         connections: product.connections.map((value) => ({ value })),
         materials: product.materials.map((value) => ({ value })),

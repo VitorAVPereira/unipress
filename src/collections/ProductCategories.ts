@@ -13,12 +13,9 @@ export const ProductCategories: CollectionConfig = {
     { name: 'slug', type: 'text', required: true, unique: true, index: true },
     {
       name: 'family',
-      type: 'select',
+      type: 'relationship',
+      relationTo: 'product-families',
       label: 'Família',
-      options: [
-        { label: 'Manômetro', value: 'manometro' },
-        { label: 'Acessório', value: 'acessorio' },
-      ],
       required: true,
       index: true,
     },

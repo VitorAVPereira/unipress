@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   filterProducts,
+  familyFilterOptions,
   normalizeSearch,
   readCatalogFilters,
   writeCatalogFilters,
@@ -15,7 +16,7 @@ const products: CatalogProduct[] = [
     name: 'Manômetro Industrial Inox',
     code: 'UP-MI100',
     summary: 'Construção robusta para processos industriais',
-    family: 'manometro',
+    family: { slug: 'manometro', name: 'Manômetro', technicalProfile: 'manometro' },
     category: 'industriais',
     applications: ['Água', 'Óleo'],
     diameters: ['100 mm'],
@@ -29,7 +30,7 @@ const products: CatalogProduct[] = [
     name: 'Manômetro com Glicerina',
     code: 'UP-MG63',
     summary: 'Amortecimento para vibração e pulsação',
-    family: 'manometro',
+    family: { slug: 'manometro', name: 'Manômetro', technicalProfile: 'manometro' },
     category: 'com-glicerina',
     applications: ['Hidráulica'],
     diameters: ['63 mm'],
@@ -43,7 +44,7 @@ const products: CatalogProduct[] = [
     name: 'Sifão Tipo Trombeta',
     code: 'UP-ST',
     summary: 'Proteção térmica para instrumentos de pressão',
-    family: 'acessorio',
+    family: { slug: 'acessorio', name: 'Acessório', technicalProfile: 'acessorio' },
     category: 'sifoes',
     applications: ['Vapor'],
     diameters: [],
@@ -77,6 +78,32 @@ describe('catálogo', () => {
     })
 
     expect(result.map((product) => product.id)).toEqual(['industrial-100', 'glicerina-63'])
+  })
+
+  it('filtra pela chave da família e exibe o nome atualizado vindo do CMS', () => {
+    const renamed = products.map((product) =>
+      product.family.slug === 'manometro'
+        ? { ...product, family: { ...product.family, name: 'Instrumentos de pressão' } }
+        : product,
+    )
+
+    expect(filterProducts(renamed, { families: ['manometro'] }).map((product) => product.id)).toEqual([
+      'industrial-100',
+      'glicerina-63',
+    ])
+    expect(familyFilterOptions(renamed)).toEqual([
+      { label: 'Acessório', value: 'acessorio' },
+      { label: 'Instrumentos de pressão', value: 'manometro' },
+    ])
+  })
+
+  it('preserva a ordem administrativa ao aplicar filtros', () => {
+    const administrativeOrder = [products[1], products[0], products[2]]
+
+    expect(filterProducts(administrativeOrder, { families: ['manometro'] }).map((product) => product.id)).toEqual([
+      'glicerina-63',
+      'industrial-100',
+    ])
   })
 
   it('filtra pelas opções cadastradas de faixa e unidade de pressão', () => {

@@ -1,8 +1,9 @@
 import { ArrowRight, Gauge, PackageCheck } from 'lucide-react'
 import type { Metadata } from 'next'
+import { draftMode } from 'next/headers'
 import Link from 'next/link'
 
-import { getServices } from '@/lib/cms'
+import { getServices, getServicesPageContent } from '@/lib/cms'
 
 export const metadata: Metadata = {
   title: 'Serviços',
@@ -11,14 +12,15 @@ export const metadata: Metadata = {
 }
 
 export default async function ServicesPage() {
-  const services = await getServices()
+  const draft = (await draftMode()).isEnabled
+  const [services, page] = await Promise.all([getServices({ draft }), getServicesPageContent({ draft })])
   return (
     <>
       <section className="page-hero service-page-hero">
         <div className="container">
-          <span className="eyebrow">Serviços metrológicos</span>
-          <h1>Confiança para medir. Segurança para decidir.</h1>
-          <p>Atendimento em laboratório para instrumentos enviados de todo o Brasil.</p>
+          <span className="eyebrow">{page.eyebrow}</span>
+          <h1>{page.title}</h1>
+          <p>{page.description}</p>
         </div>
       </section>
       <section className="section container">

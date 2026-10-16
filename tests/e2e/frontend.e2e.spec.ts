@@ -91,12 +91,51 @@ test.describe('site UniPress', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
 
-    const menu = page.locator('summary[aria-label="Abrir menu"]')
+    const menu = page.getByRole('button', { name: 'Abrir menu' })
     await menu.focus()
     await menu.press('Enter')
-    await expect(page.getByRole('navigation', { name: 'Principal' }).last()).toBeVisible()
-    await page.getByRole('navigation', { name: 'Principal' }).last().getByRole('link', { name: 'Produtos' }).click()
+    const mobileNavigation = page.getByRole('navigation', { name: 'Menu móvel' })
+    await expect(mobileNavigation).toBeVisible()
+    await mobileNavigation.getByRole('link', { name: 'Produtos' }).click()
     await expect(page).toHaveURL('/produtos')
+    await expect(page.getByRole('navigation', { name: 'Menu móvel' })).toHaveCount(0)
+  })
+
+  test('mantém os filtros do catálogo recolhidos no celular', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/produtos')
+
+    const filterButton = page.getByRole('button', { name: /^Abrir filtros/ })
+    const search = page.getByRole('searchbox', { name: 'Buscar produtos' })
+    test.skip(await search.count() === 0, 'Requer catálogo publicado ou conteúdo demonstrativo habilitado.')
+    await expect(filterButton).toBeVisible()
+    await expect(search).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Filtros do catálogo' })).toHaveCount(0)
+
+    const searchBox = await search.boundingBox()
+    const filterButtonBox = await filterButton.boundingBox()
+    expect(searchBox).not.toBeNull()
+    expect(filterButtonBox).not.toBeNull()
+    expect(searchBox!.y).toBeLessThan(filterButtonBox!.y)
+
+    await filterButton.click()
+    const panel = page.getByRole('dialog', { name: 'Filtros do catálogo' })
+    await expect(panel).toBeVisible()
+    await expect(panel.getByText('Família')).toBeVisible()
+    await expect(panel.getByText('Categoria')).toBeVisible()
+  })
+
+  test('não cria rolagem horizontal nas páginas principais no celular', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+
+    for (const path of ['/', '/produtos', '/servicos', '/sobre', '/contato']) {
+      await page.goto(path)
+      const dimensions = await page.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        content: document.documentElement.scrollWidth,
+      }))
+      expect(dimensions.content, `Largura excedente em ${path}`).toBeLessThanOrEqual(dimensions.viewport + 1)
+    }
   })
 
   test('oferece entrada privada sem cadastro público', async ({ page }) => {

@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { Breadcrumbs } from '@/components/site/Breadcrumbs'
+import { ServiceHeroVisual } from '@/components/services/ServiceHeroVisual'
 import { getServiceBySlug, getServices, getSiteSettings } from '@/lib/cms'
 import { buildWhatsAppOrContactURL } from '@/lib/whatsapp'
 
@@ -39,7 +40,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <p>{service.summary}</p>
           <a className="button button-primary" href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Solicitar atendimento</a>
         </div>
-        <div className="calibration-emblem" aria-hidden="true"><ShieldCheck /><strong>RBC</strong><span>Rastreabilidade</span></div>
+        <ServiceHeroVisual image={service.image} />
       </section>
       <section className="traceability-strip"><div className="container"><ShieldCheck /><div><span>Rastreabilidade metrológica</span><strong>{service.traceabilityNote}</strong></div></div></section>
       <section className="section container service-content-grid">

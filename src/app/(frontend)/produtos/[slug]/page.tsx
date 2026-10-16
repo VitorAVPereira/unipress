@@ -59,7 +59,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
         <div className="detail-copy">
-          <span className="eyebrow">{product.family === 'manometro' ? 'Manômetro' : 'Acessório'} · {product.code}</span>
+          <span className="eyebrow">{product.family.name} · {product.code}</span>
           <h1>{product.name}</h1>
           <p className="detail-lead">{product.summary}</p>
           <p>{product.description}</p>

@@ -68,6 +68,7 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    'product-families': ProductFamily;
     products: Product;
     'product-categories': ProductCategory;
     services: Service;
@@ -92,6 +93,7 @@ export interface Config {
     };
   };
   collectionsSelect: {
+    'product-families': ProductFamiliesSelect<false> | ProductFamiliesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -117,6 +119,7 @@ export interface Config {
   globals: {
     'site-settings': SiteSetting;
     home: Home;
+    'services-page': ServicesPage;
     about: About;
     contact: Contact;
     privacy: Privacy;
@@ -124,6 +127,7 @@ export interface Config {
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     home: HomeSelect<false> | HomeSelect<true>;
+    'services-page': ServicesPageSelect<false> | ServicesPageSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
     contact: ContactSelect<false> | ContactSelect<true>;
     privacy: PrivacySelect<false> | PrivacySelect<true>;
@@ -182,14 +186,28 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-families".
+ */
+export interface ProductFamily {
+  id: number;
+  name: string;
+  slug: string;
+  technicalProfile: 'manometro' | 'acessorio' | 'generico';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
 export interface Product {
   id: number;
+  _order?: string | null;
   name: string;
   slug: string;
   code: string;
-  family: 'manometro' | 'acessorio';
+  family: number | ProductFamily;
+  familyProfile: 'manometro' | 'acessorio' | 'generico';
   category: number | ProductCategory;
   summary: string;
   description: {
@@ -313,7 +331,7 @@ export interface ProductCategory {
   id: number;
   name: string;
   slug: string;
-  family: 'manometro' | 'acessorio';
+  family: number | ProductFamily;
   summary: string;
   image?: (number | null) | Media;
   order: number;
@@ -765,6 +783,10 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'product-families';
+        value: number | ProductFamily;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
@@ -866,13 +888,26 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-families_select".
+ */
+export interface ProductFamiliesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  technicalProfile?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   slug?: T;
   code?: T;
   family?: T;
+  familyProfile?: T;
   category?: T;
   summary?: T;
   description?: T;
@@ -1397,6 +1432,19 @@ export interface Home {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page".
+ */
+export interface ServicesPage {
+  id: number;
+  eyebrow: string;
+  title: string;
+  description: string;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about".
  */
 export interface About {
@@ -1510,6 +1558,19 @@ export interface HomeSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page_select".
+ */
+export interface ServicesPageSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  description?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;

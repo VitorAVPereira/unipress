@@ -1,4 +1,10 @@
-export type CatalogFamily = 'manometro' | 'acessorio'
+export type CatalogTechnicalProfile = 'manometro' | 'acessorio' | 'generico'
+
+export type CatalogFamily = {
+  slug: string
+  name: string
+  technicalProfile: CatalogTechnicalProfile
+}
 
 export type CatalogProduct = {
   id: string
@@ -65,6 +71,10 @@ const facetKeys = [
   'compatibility',
 ] as const
 
+export function countActiveCatalogFacets(filters: CatalogFilters): number {
+  return facetKeys.reduce((count, key) => count + (filters[key]?.length || 0), 0)
+}
+
 const productFacet: Record<(typeof facetKeys)[number], keyof CatalogProduct> = {
   families: 'family',
   categories: 'category',
@@ -85,11 +95,19 @@ const productFacet: Record<(typeof facetKeys)[number], keyof CatalogProduct> = {
 function hasSelectedValue(product: CatalogProduct, key: (typeof facetKeys)[number], selected: string[]) {
   if (selected.length === 0) return true
 
-  const rawValue = product[productFacet[key]]
+  const rawValue = key === 'families' ? product.family.slug : product[productFacet[key]]
   const values = Array.isArray(rawValue) ? rawValue : rawValue ? [rawValue] : []
   const normalizedValues = values.map((value) => normalizeSearch(String(value)))
 
   return selected.some((value) => normalizedValues.includes(normalizeSearch(value)))
+}
+
+export function familyFilterOptions(products: CatalogProduct[]) {
+  const families = new Map<string, string>()
+  products.forEach((product) => families.set(product.family.slug, product.family.name))
+  return [...families].map(([value, label]) => ({ label, value })).sort((a, b) =>
+    a.label.localeCompare(b.label, 'pt-BR'),
+  )
 }
 
 export function filterProducts<T extends CatalogProduct>(products: T[], filters: CatalogFilters): T[] {

@@ -5,6 +5,7 @@ import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { seoFields } from '@/fields/seo'
 import { revalidateDeletedProduct, revalidateProduct } from '@/hooks/revalidateContent'
+import { syncProductFamilyProfile } from '@/hooks/syncProductFamilyProfile'
 import { generatePreviewPathWhenReady } from '@/lib/preview'
 
 const listField = (name: string, label: string): Field => ({
@@ -16,6 +17,7 @@ const listField = (name: string, label: string): Field => ({
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  orderable: true,
   labels: { singular: 'Produto', plural: 'Produtos' },
   access: { create: authenticated, delete: authenticated, read: authenticatedOrPublished, update: authenticated },
   admin: {
@@ -26,7 +28,11 @@ export const Products: CollectionConfig = {
     preview: (data) => generatePreviewPathWhenReady({ collection: 'products', slug: data?.slug }),
     useAsTitle: 'name',
   },
-  hooks: { afterChange: [revalidateProduct], afterDelete: [revalidateDeletedProduct] },
+  hooks: {
+    afterChange: [revalidateProduct],
+    afterDelete: [revalidateDeletedProduct],
+    beforeValidate: [syncProductFamilyProfile],
+  },
   versions: { drafts: { autosave: true, schedulePublish: true }, maxPerDoc: 20 },
   fields: [
     { name: 'name', type: 'text', label: 'Nome', required: true },
@@ -34,14 +40,24 @@ export const Products: CollectionConfig = {
     { name: 'code', type: 'text', label: 'Código / modelo', required: true, unique: true, index: true },
     {
       name: 'family',
-      type: 'select',
+      type: 'relationship',
+      relationTo: 'product-families',
       label: 'Família',
+      required: true,
+      index: true,
+      admin: { components: { Field: '@/components/admin/ProductFamilyField#ProductFamilyField' } },
+    },
+    {
+      name: 'familyProfile',
+      type: 'select',
+      defaultValue: 'generico',
+      required: true,
       options: [
         { label: 'Manômetro', value: 'manometro' },
         { label: 'Acessório', value: 'acessorio' },
+        { label: 'Genérico', value: 'generico' },
       ],
-      required: true,
-      index: true,
+      admin: { hidden: true },
     },
     { name: 'category', type: 'relationship', relationTo: 'product-categories', label: 'Categoria', required: true, index: true },
     { name: 'summary', type: 'textarea', label: 'Resumo', required: true, maxLength: 240 },
@@ -53,7 +69,7 @@ export const Products: CollectionConfig = {
       name: 'manometerSpecs',
       type: 'group',
       label: 'Especificações do manômetro',
-      admin: { condition: (_, siblingData) => siblingData?.family === 'manometro' },
+      admin: { condition: (_, siblingData) => siblingData?.familyProfile === 'manometro' },
       fields: [
         {
           name: 'pressureRanges',
@@ -80,7 +96,7 @@ export const Products: CollectionConfig = {
       name: 'accessorySpecs',
       type: 'group',
       label: 'Especificações do acessório',
-      admin: { condition: (_, siblingData) => siblingData?.family === 'acessorio' },
+      admin: { condition: (_, siblingData) => siblingData?.familyProfile === 'acessorio' },
       fields: [
         { name: 'type', type: 'text', label: 'Subtipo' },
         listField('connections', 'Conexões / roscas'),

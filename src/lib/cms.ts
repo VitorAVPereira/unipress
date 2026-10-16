@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import { demoProducts, demoServices } from '@/data/demo'
 import type { CatalogProduct } from '@/lib/catalog'
-import type { About, Contact, Home, Media, Privacy, Product, Service, SiteSetting } from '@/payload-types'
+import type { About, Contact, Home, Media, Privacy, Product, ProductFamily, Service, SiteSetting } from '@/payload-types'
 import { isDemoContentEnabled } from '@/lib/launch'
 
 type ContentOptions = { draft?: boolean }
@@ -45,6 +45,12 @@ export type PublicInstitutionalContent = {
   content: string
   image?: PublicImage
   updatedAtLabel?: string
+}
+
+export type PublicServicesPageContent = {
+  eyebrow: string
+  title: string
+  description: string
 }
 
 export const defaultSettings = {
@@ -101,6 +107,12 @@ const defaultPrivacy: PublicInstitutionalContent = {
   content: 'Esta política descreve como a UniPress trata os dados enviados voluntariamente por seus canais de atendimento.\n\nDados de contato: ao iniciar uma conversa pelo WhatsApp, as informações fornecidas são utilizadas exclusivamente para responder à solicitação e prestar o atendimento solicitado.\n\nEnvio e retenção: as mensagens são processadas pelo canal escolhido pelo visitante e mantidas somente pelo período necessário ao atendimento e às obrigações aplicáveis.\n\nSegurança: dados técnicos mínimos podem ser processados pelos provedores de infraestrutura para garantir segurança e disponibilidade do site.\n\nSeus direitos: o titular pode solicitar confirmação, correção ou exclusão dos seus dados pelos canais apresentados na página de contato.\n\nCookies e métricas: este lançamento não utiliza analytics nem cookies não essenciais.',
 }
 
+export const defaultServicesPage: PublicServicesPageContent = {
+  eyebrow: 'Serviços metrológicos',
+  title: 'Confiança para medir. Segurança para decidir.',
+  description: 'Atendimento em laboratório para instrumentos enviados de todo o Brasil.',
+}
+
 const allowDemo = isDemoContentEnabled()
 
 function list(values?: { value: string }[] | null) {
@@ -111,6 +123,23 @@ function imageFrom(value: number | Media | null | undefined) {
   return typeof value === 'object' && value?.url
     ? { url: value.url, alt: value.alt, updatedAt: value.updatedAt }
     : undefined
+}
+
+const fallbackProductFamily: CatalogProduct['family'] = {
+  name: 'Produtos',
+  slug: 'produtos',
+  technicalProfile: 'generico',
+}
+
+export function normalizeProductFamily(
+  value: number | Pick<ProductFamily, 'id' | 'name' | 'slug' | 'technicalProfile'> | null | undefined,
+): CatalogProduct['family'] {
+  if (typeof value !== 'object' || !value?.slug || !value.name) return fallbackProductFamily
+  return {
+    name: value.name,
+    slug: value.slug,
+    technicalProfile: value.technicalProfile || 'generico',
+  }
 }
 
 export function richTextToPlainText(value: unknown): string {
@@ -150,7 +179,7 @@ function mapProduct(product: Product): PublicProduct {
     code: product.code,
     summary: product.summary,
     description: richTextToPlainText(product.description),
-    family: product.family,
+    family: normalizeProductFamily(product.family),
     category,
     applications: list(product.applications),
     diameters: list(manometer?.diameters),
@@ -258,6 +287,26 @@ export async function getPrivacyContent({ draft = false }: ContentOptions = {}):
   }
 }
 
+export async function getServicesPageContent(
+  { draft = false }: ContentOptions = {},
+): Promise<PublicServicesPageContent> {
+  try {
+    const payload = await payloadClient()
+    const page = await payload.findGlobal({
+      slug: 'services-page',
+      draft,
+      overrideAccess: draft,
+    })
+    return {
+      eyebrow: page.eyebrow || defaultServicesPage.eyebrow,
+      title: page.title || defaultServicesPage.title,
+      description: page.description || defaultServicesPage.description,
+    }
+  } catch {
+    return defaultServicesPage
+  }
+}
+
 export async function getProducts({ draft = false }: ContentOptions = {}): Promise<PublicProduct[]> {
   try {
     const payload = await payloadClient()
@@ -267,7 +316,7 @@ export async function getProducts({ draft = false }: ContentOptions = {}): Promi
       draft,
       limit: 100,
       overrideAccess: draft,
-      sort: 'name',
+      sort: ['_order', 'name'],
       where: draft ? undefined : { _status: { equals: 'published' } },
     })
     if (result.docs.length > 0) return result.docs.map(mapProduct)

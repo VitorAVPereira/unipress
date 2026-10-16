@@ -18,6 +18,7 @@ describe('CMS UniPress', () => {
         'media',
         'documents',
         'product-categories',
+        'product-families',
         'products',
         'services',
         'clients',
@@ -33,7 +34,9 @@ describe('CMS UniPress', () => {
   it('expõe configurações institucionais editáveis', () => {
     const slugs = payload.globals.config.map((global) => global.slug)
 
-    expect(slugs).toEqual(expect.arrayContaining(['site-settings', 'home', 'about', 'contact', 'privacy']))
+    expect(slugs).toEqual(
+      expect.arrayContaining(['site-settings', 'home', 'services-page', 'about', 'contact', 'privacy']),
+    )
   })
 
   it('permite editar navegação e dados comerciais sem código', () => {
