@@ -18,7 +18,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
         {product.demo && <span className="demo-badge">Demonstração</span>}
       </Link>
       <div className="product-card-body">
-        <span className="eyebrow">{product.family === 'manometro' ? 'Manômetro' : 'Acessório'} · {product.code}</span>
+        <span className="eyebrow">{product.family.name} · {product.code}</span>
         <h2><Link href={`/produtos/${product.slug}`}>{product.name}</Link></h2>
         <p>{product.summary}</p>
         <Link className="text-link" href={`/produtos/${product.slug}`}>Ver especificações <ArrowUpRight size={16} /></Link>

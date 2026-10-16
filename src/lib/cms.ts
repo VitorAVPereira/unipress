@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import { demoProducts, demoServices } from '@/data/demo'
 import type { CatalogProduct } from '@/lib/catalog'
-import type { About, Contact, Home, Media, Privacy, Product, Service, SiteSetting } from '@/payload-types'
+import type { About, Contact, Home, Media, Privacy, Product, ProductFamily, Service, SiteSetting } from '@/payload-types'
 import { isDemoContentEnabled } from '@/lib/launch'
 
 type ContentOptions = { draft?: boolean }
@@ -125,6 +125,23 @@ function imageFrom(value: number | Media | null | undefined) {
     : undefined
 }
 
+const fallbackProductFamily: CatalogProduct['family'] = {
+  name: 'Produtos',
+  slug: 'produtos',
+  technicalProfile: 'generico',
+}
+
+export function normalizeProductFamily(
+  value: number | Pick<ProductFamily, 'id' | 'name' | 'slug' | 'technicalProfile'> | null | undefined,
+): CatalogProduct['family'] {
+  if (typeof value !== 'object' || !value?.slug || !value.name) return fallbackProductFamily
+  return {
+    name: value.name,
+    slug: value.slug,
+    technicalProfile: value.technicalProfile || 'generico',
+  }
+}
+
 export function richTextToPlainText(value: unknown): string {
   if (!value || typeof value !== 'object') return ''
   const node = value as { text?: unknown; children?: unknown[]; root?: unknown }
@@ -162,7 +179,7 @@ function mapProduct(product: Product): PublicProduct {
     code: product.code,
     summary: product.summary,
     description: richTextToPlainText(product.description),
-    family: product.family,
+    family: normalizeProductFamily(product.family),
     category,
     applications: list(product.applications),
     diameters: list(manometer?.diameters),
@@ -299,7 +316,7 @@ export async function getProducts({ draft = false }: ContentOptions = {}): Promi
       draft,
       limit: 100,
       overrideAccess: draft,
-      sort: 'name',
+      sort: ['_order', 'name'],
       where: draft ? undefined : { _status: { equals: 'published' } },
     })
     if (result.docs.length > 0) return result.docs.map(mapProduct)

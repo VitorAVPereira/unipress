@@ -4,7 +4,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useTransition } from 'react'
 
-import { filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
+import { familyFilterOptions, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
 import type { PublicProduct } from '@/lib/cms'
 
 import { ProductCard } from './ProductCard'
@@ -44,13 +44,16 @@ const productField: Partial<Record<keyof CatalogFilters, keyof PublicProduct>> =
 }
 
 function optionsFor(products: PublicProduct[], key: keyof CatalogFilters) {
+  if (key === 'families') return familyFilterOptions(products)
   const field = productField[key]
   if (!field) return []
   const values = products.flatMap((product) => {
     const value = product[field]
     return Array.isArray(value) ? value.map(String) : value ? [String(value)] : []
   })
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  return [...new Set(values)]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    .map((value) => ({ label: value, value }))
 }
 
 export function CatalogClient({ products }: { products: PublicProduct[] }) {
@@ -95,11 +98,11 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
             <fieldset className="filter-group" key={key}>
               <legend>{label}</legend>
               {options.map((option) => {
-                const checked = ((filters[key] as string[] | undefined) || []).includes(option)
+                const checked = ((filters[key] as string[] | undefined) || []).includes(option.value)
                 return (
-                  <label key={option}>
-                    <input type="checkbox" checked={checked} onChange={() => toggle(key, option)} />
-                    <span>{key === 'families' ? (option === 'manometro' ? 'Manômetros' : 'Acessórios') : option}</span>
+                  <label key={option.value}>
+                    <input type="checkbox" checked={checked} onChange={() => toggle(key, option.value)} />
+                    <span>{option.label}</span>
                   </label>
                 )
               })}

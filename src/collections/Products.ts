@@ -17,6 +17,7 @@ const listField = (name: string, label: string): Field => ({
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  orderable: true,
   labels: { singular: 'Produto', plural: 'Produtos' },
   access: { create: authenticated, delete: authenticated, read: authenticatedOrPublished, update: authenticated },
   admin: {
