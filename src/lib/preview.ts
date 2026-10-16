@@ -1,7 +1,8 @@
-export type PreviewContent = 'products' | 'services' | 'home' | 'about' | 'contact' | 'privacy'
+export type PreviewContent = 'products' | 'services' | 'servicesPage' | 'home' | 'about' | 'contact' | 'privacy'
 
 const staticPaths: Record<Exclude<PreviewContent, 'products' | 'services'>, string> = {
   home: '/',
+  servicesPage: '/servicos',
   about: '/sobre',
   contact: '/contato',
   privacy: '/privacidade',

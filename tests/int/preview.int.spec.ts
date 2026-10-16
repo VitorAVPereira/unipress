@@ -7,6 +7,7 @@ describe('pré-visualização do CMS', () => {
   it('mapeia cada conteúdo para sua rota pública', () => {
     expect(publicPathForContent('products', 'manometro-inox')).toBe('/produtos/manometro-inox')
     expect(publicPathForContent('services', 'calibracao')).toBe('/servicos/calibracao')
+    expect(publicPathForContent('servicesPage')).toBe('/servicos')
     expect(publicPathForContent('home')).toBe('/')
     expect(publicPathForContent('about')).toBe('/sobre')
     expect(publicPathForContent('contact')).toBe('/contato')

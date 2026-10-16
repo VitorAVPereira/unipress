@@ -63,6 +63,7 @@ export const revalidateGlobal: GlobalAfterChangeHook = ({ doc, global, req }) =>
   const paths: Record<string, string[]> = {
     'site-settings': ['/', '/produtos', '/servicos', '/sobre', '/contato', '/privacidade'],
     home: ['/'],
+    'services-page': ['/servicos'],
     about: ['/sobre'],
     contact: ['/contato'],
     privacy: ['/privacidade'],

@@ -20,6 +20,7 @@ import { About } from './globals/About'
 import { Contact } from './globals/Contact'
 import { Home } from './globals/Home'
 import { Privacy } from './globals/Privacy'
+import { ServicesPage } from './globals/ServicesPage'
 import { SiteSettings } from './globals/SiteSettings'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -92,7 +93,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [SiteSettings, Home, About, Contact, Privacy],
+  globals: [SiteSettings, Home, ServicesPage, About, Contact, Privacy],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

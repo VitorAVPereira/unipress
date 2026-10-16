@@ -117,6 +117,7 @@ export interface Config {
   globals: {
     'site-settings': SiteSetting;
     home: Home;
+    'services-page': ServicesPage;
     about: About;
     contact: Contact;
     privacy: Privacy;
@@ -124,6 +125,7 @@ export interface Config {
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     home: HomeSelect<false> | HomeSelect<true>;
+    'services-page': ServicesPageSelect<false> | ServicesPageSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
     contact: ContactSelect<false> | ContactSelect<true>;
     privacy: PrivacySelect<false> | PrivacySelect<true>;
@@ -1397,6 +1399,19 @@ export interface Home {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page".
+ */
+export interface ServicesPage {
+  id: number;
+  eyebrow: string;
+  title: string;
+  description: string;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about".
  */
 export interface About {
@@ -1510,6 +1525,19 @@ export interface HomeSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page_select".
+ */
+export interface ServicesPageSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  description?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;

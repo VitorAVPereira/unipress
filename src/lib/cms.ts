@@ -47,6 +47,12 @@ export type PublicInstitutionalContent = {
   updatedAtLabel?: string
 }
 
+export type PublicServicesPageContent = {
+  eyebrow: string
+  title: string
+  description: string
+}
+
 export const defaultSettings = {
   companyName: 'UniPress',
   tagline: 'Precisão que acompanha sua operação.',
@@ -99,6 +105,12 @@ const defaultContact: PublicInstitutionalContent = {
 const defaultPrivacy: PublicInstitutionalContent = {
   title: 'Política de Privacidade',
   content: 'Esta política descreve como a UniPress trata os dados enviados voluntariamente por seus canais de atendimento.\n\nDados de contato: ao iniciar uma conversa pelo WhatsApp, as informações fornecidas são utilizadas exclusivamente para responder à solicitação e prestar o atendimento solicitado.\n\nEnvio e retenção: as mensagens são processadas pelo canal escolhido pelo visitante e mantidas somente pelo período necessário ao atendimento e às obrigações aplicáveis.\n\nSegurança: dados técnicos mínimos podem ser processados pelos provedores de infraestrutura para garantir segurança e disponibilidade do site.\n\nSeus direitos: o titular pode solicitar confirmação, correção ou exclusão dos seus dados pelos canais apresentados na página de contato.\n\nCookies e métricas: este lançamento não utiliza analytics nem cookies não essenciais.',
+}
+
+export const defaultServicesPage: PublicServicesPageContent = {
+  eyebrow: 'Serviços metrológicos',
+  title: 'Confiança para medir. Segurança para decidir.',
+  description: 'Atendimento em laboratório para instrumentos enviados de todo o Brasil.',
 }
 
 const allowDemo = isDemoContentEnabled()
@@ -255,6 +267,26 @@ export async function getPrivacyContent({ draft = false }: ContentOptions = {}):
     }
   } catch {
     return defaultPrivacy
+  }
+}
+
+export async function getServicesPageContent(
+  { draft = false }: ContentOptions = {},
+): Promise<PublicServicesPageContent> {
+  try {
+    const payload = await payloadClient()
+    const page = await payload.findGlobal({
+      slug: 'services-page',
+      draft,
+      overrideAccess: draft,
+    })
+    return {
+      eyebrow: page.eyebrow || defaultServicesPage.eyebrow,
+      title: page.title || defaultServicesPage.title,
+      description: page.description || defaultServicesPage.description,
+    }
+  } catch {
+    return defaultServicesPage
   }
 }
 
