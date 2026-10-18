@@ -84,6 +84,20 @@ describe('imagens editoriais', () => {
     expect(screen.getByRole('img', { name: 'Ícone de acessórios' })).not.toBeNull()
   })
 
+  it('não numera os dois cards de soluções da página inicial', async () => {
+    vi.mocked(getHomeContent).mockResolvedValue({
+      eyebrow: 'Chamada',
+      title: 'Página inicial',
+      description: 'Descrição',
+      heroImage: null,
+      benefits: [],
+    } as never)
+
+    const { container } = render(await HomePage())
+
+    expect(container.querySelector('.category-number')).toBeNull()
+  })
+
   it('leva a chamada de calibração ao contato quando não há serviço publicado', async () => {
     vi.mocked(getHomeContent).mockResolvedValue({
       eyebrow: 'Chamada',

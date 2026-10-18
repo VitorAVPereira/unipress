@@ -1,12 +1,12 @@
 import { ArrowLeft, Download, MessageCircle, ShieldCheck } from 'lucide-react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { Breadcrumbs } from '@/components/site/Breadcrumbs'
 import { GaugeVisual } from '@/components/site/GaugeVisual'
+import { ProductGallery } from '@/components/products/ProductGallery'
 import { getProductBySlug, getProducts, getSiteSettings } from '@/lib/cms'
 import { buildWhatsAppOrContactURL } from '@/lib/whatsapp'
 
@@ -47,16 +47,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <>
       <Breadcrumbs items={[["Início", '/'], ['Produtos', '/produtos'], [product.name]]} />
       <section className="product-detail container">
-        <div className="detail-visual">
+        <div className={`detail-visual${product.images.length > 0 ? '' : ' detail-visual-fallback'}`}>
           {product.demo && <span className="demo-badge">Conteúdo demonstrativo</span>}
-          {product.image ? (
-            <Image className="detail-product-image" src={product.image.url} alt={product.image.alt} width={900} height={900} priority />
-          ) : <GaugeVisual />}
-          {product.images.length > 1 && (
-            <div className="detail-thumbnails" aria-label="Galeria do produto">
-              {product.images.slice(1, 4).map((image) => <Image key={image.url} src={image.url} alt={image.alt} width={160} height={160} />)}
-            </div>
-          )}
+          {product.images.length > 0 ? <ProductGallery images={product.images} /> : <GaugeVisual />}
         </div>
         <div className="detail-copy">
           <span className="eyebrow">{product.family.name} · {product.code}</span>

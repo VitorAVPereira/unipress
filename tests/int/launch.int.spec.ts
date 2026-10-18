@@ -9,22 +9,26 @@ import {
 
 describe('lançamento institucional', () => {
   it('mantém o formulário desativado sem a configuração completa de e-mail e antispam', () => {
-    expect(isContactFormEnabled({})).toBe(false)
+    expect(isContactFormEnabled({}, 'comercial@example.com')).toBe(false)
     expect(isContactFormEnabled({
       RESEND_API_KEY: 'resend-key',
       RESEND_FROM_EMAIL: 'site@example.com',
-      CONTACT_TO_EMAIL: 'comercial@example.com',
-    })).toBe(false)
+    }, 'comercial@example.com')).toBe(false)
   })
 
-  it('habilita o formulário somente com Resend e Turnstile completos', () => {
+  it('habilita o formulário com Resend, Turnstile e destinatário definido no admin', () => {
     expect(isContactFormEnabled({
       RESEND_API_KEY: 'resend-key',
       RESEND_FROM_EMAIL: 'site@example.com',
-      CONTACT_TO_EMAIL: 'comercial@example.com',
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 'site-key',
       TURNSTILE_SECRET_KEY: 'secret-key',
-    })).toBe(true)
+    }, 'comercial@example.com')).toBe(true)
+    expect(isContactFormEnabled({
+      RESEND_API_KEY: 'resend-key',
+      RESEND_FROM_EMAIL: 'site@example.com',
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 'site-key',
+      TURNSTILE_SECRET_KEY: 'secret-key',
+    }, '')).toBe(false)
   })
 
   it('habilita a recuperação de senha somente quando o adaptador de e-mail pode ser criado', () => {

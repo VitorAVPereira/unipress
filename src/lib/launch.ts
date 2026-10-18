@@ -4,11 +4,13 @@ function hasValues(environment: Environment, keys: string[]) {
   return keys.every((key) => Boolean(environment[key]?.trim()))
 }
 
-export function isContactFormEnabled(environment: Environment = process.env) {
-  return hasValues(environment, [
+export function isContactFormEnabled(
+  environment: Environment = process.env,
+  recipientEmail?: string | null,
+) {
+  return Boolean(recipientEmail?.trim()) && hasValues(environment, [
     'RESEND_API_KEY',
     'RESEND_FROM_EMAIL',
-    'CONTACT_TO_EMAIL',
     'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
     'TURNSTILE_SECRET_KEY',
   ])

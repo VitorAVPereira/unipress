@@ -55,10 +55,16 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <ul>{service.instruments.map((instrument) => <li key={instrument}><CheckCircle2 size={18} />{instrument}</li>)}</ul>
         </div>
       </section>
-      <section className="container service-logistics">
-        <Package /><div><span>01</span><h3>Envie de qualquer lugar do Brasil</h3><p>Combine o envio com nossa equipe comercial.</p></div>
-        <ArrowRight />
-        <RotateCcw /><div><span>02</span><h3>Receba o instrumento de volta</h3><p>Devolução acompanhada da documentação aplicável.</p></div>
+      <section className="container service-logistics" aria-label="Logística do serviço">
+        <article className="service-logistics-card">
+          <Package />
+          <div><h3>Envie de qualquer lugar do Brasil</h3><p>Combine o envio com nossa equipe comercial.</p></div>
+        </article>
+        <ArrowRight className="service-logistics-arrow" />
+        <article className="service-logistics-card">
+          <RotateCcw />
+          <div><h3>Receba o instrumento de volta</h3><p>Devolução acompanhada da documentação aplicável.</p></div>
+        </article>
       </section>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>

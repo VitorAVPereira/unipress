@@ -35,32 +35,116 @@ test.describe('site UniPress', () => {
       .toBeLessThan(0.1)
   })
 
-  test('exibe a imagem da página Sobre somente com borda preta', async ({ page }) => {
-    await page.goto('/sobre')
+  test('exibe a imagem da página Sobre sem moldura e próxima das bordas', async ({ page }) => {
+    const databaseURL = process.env.DATABASE_URL
+    if (!databaseURL) throw new Error('DATABASE_URL é obrigatória para o teste E2E da página Sobre.')
 
-    const visual = page.locator('.about-visual')
-    await expect(visual.getByText('UniPress', { exact: true })).toHaveCount(0)
+    const inspectImage = async (width: number, height: number) => {
+      await page.setViewportSize({ width, height })
+      await page.goto(`/sobre?viewport=${width}`)
 
-    const styles = await visual.evaluate((element) => {
-      const visualStyle = getComputedStyle(element)
-      const decorationStyle = getComputedStyle(element, '::before')
+      const visual = page.locator('.about-visual')
+      const image = visual.locator('.about-image')
+      await expect(image).toBeVisible()
+      await expect(image).toHaveAttribute('alt', 'Imagem E2E da página Sobre')
 
-      return {
-        backgroundColor: visualStyle.backgroundColor,
-        borderColor: visualStyle.borderTopColor,
-        borderStyle: visualStyle.borderTopStyle,
-        borderWidth: visualStyle.borderTopWidth,
-        decorationBackground: decorationStyle.backgroundImage,
+      return visual.evaluate((element) => {
+        const visualStyle = getComputedStyle(element)
+        const imageStyle = getComputedStyle(element.querySelector('.about-image') as HTMLElement)
+        const visualRect = element.getBoundingClientRect()
+        const imageRect = element.querySelector('.about-image')!.getBoundingClientRect()
+
+        return {
+          borderWidths: [
+            visualStyle.borderTopWidth,
+            visualStyle.borderRightWidth,
+            visualStyle.borderBottomWidth,
+            visualStyle.borderLeftWidth,
+          ],
+          imagePadding: [
+            imageStyle.paddingTop,
+            imageStyle.paddingRight,
+            imageStyle.paddingBottom,
+            imageStyle.paddingLeft,
+          ],
+          fillsVisual: Math.abs(imageRect.width - visualRect.width) < 1 && Math.abs(imageRect.height - visualRect.height) < 1,
+          objectFit: imageStyle.objectFit,
+        }
+      })
+    }
+
+    const database = new Client({ connectionString: databaseURL })
+    await database.connect()
+    let originalAbout: { id: number; image_id: number | null } | undefined
+    let mediaID: number | undefined
+    let insertedAboutID: number | undefined
+
+    try {
+      const aboutResult = await database.query<{ id: number; image_id: number | null }>(
+        'SELECT "id", "image_id" FROM "about" ORDER BY "id" LIMIT 1',
+      )
+      originalAbout = aboutResult.rows[0]
+      const fixture = await database.query<{ id: number }>(
+        `
+        INSERT INTO "media" ("alt", "url", "filename", "mime_type", "width", "height")
+        VALUES ('Imagem E2E da página Sobre', '/media/whatsapp.png', 'whatsapp.png', 'image/png', 512, 512)
+        RETURNING "id"
+        `,
+      )
+      mediaID = fixture.rows[0].id
+
+      if (originalAbout) {
+        await database.query('UPDATE "about" SET "image_id" = $1 WHERE "id" = $2', [mediaID, originalAbout.id])
+      } else {
+        const created = await database.query<{ id: number }>(
+          `
+          INSERT INTO "about" ("image_id", "_status", "created_at", "updated_at")
+          VALUES ($1, 'published', now(), now())
+          RETURNING "id"
+          `,
+          [mediaID],
+        )
+        insertedAboutID = created.rows[0].id
       }
-    })
 
-    expect(styles).toEqual({
-      backgroundColor: 'rgb(255, 255, 255)',
-      borderColor: 'rgb(17, 18, 20)',
-      borderStyle: 'solid',
-      borderWidth: '4px',
-      decorationBackground: 'none',
-    })
+      expect(await inspectImage(1280, 900)).toEqual({
+        borderWidths: ['0px', '0px', '0px', '0px'],
+        imagePadding: ['12px', '12px', '12px', '12px'],
+        fillsVisual: true,
+        objectFit: 'contain',
+      })
+      expect(await inspectImage(390, 844)).toEqual({
+        borderWidths: ['0px', '0px', '0px', '0px'],
+        imagePadding: ['12px', '12px', '12px', '12px'],
+        fillsVisual: true,
+        objectFit: 'contain',
+      })
+    } finally {
+      const cleanupErrors: unknown[] = []
+      try {
+        if (insertedAboutID != null) {
+          await database.query('DELETE FROM "about" WHERE "id" = $1', [insertedAboutID])
+        } else if (originalAbout) {
+          await database.query('UPDATE "about" SET "image_id" = $1 WHERE "id" = $2', [
+            originalAbout.image_id,
+            originalAbout.id,
+          ])
+        }
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+      try {
+        if (mediaID != null) await database.query('DELETE FROM "media" WHERE "id" = $1', [mediaID])
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+      try {
+        await database.end()
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+      if (cleanupErrors.length > 0) throw cleanupErrors[0]
+    }
   })
 
   test('apresenta o catálogo em atualização sem produtos demonstrativos', async ({ page }) => {
@@ -69,6 +153,18 @@ test.describe('site UniPress', () => {
     await expect(page.getByRole('heading', { name: 'Catálogo em atualização.' })).toBeVisible()
     await expect(page.getByTestId('product-card')).toHaveCount(0)
     await expect(page.getByRole('searchbox', { name: 'Buscar produtos' })).toHaveCount(0)
+  })
+
+  test('mantém a faixa decorativa do catálogo fora do título em telas intermediárias', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    await page.goto('/produtos')
+
+    const title = await page.getByRole('heading', {
+      name: 'Encontre a configuração certa para a sua aplicação.',
+    }).boundingBox()
+
+    expect(title).not.toBeNull()
+    expect(title!.x + title!.width).toBeLessThan(1024 * 0.82 - 24)
   })
 
   test('oferece contato direto por WhatsApp sem formulário de e-mail', async ({ page }) => {
