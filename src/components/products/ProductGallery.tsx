@@ -39,7 +39,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
         if (event.key === 'ArrowRight') selectNext()
       }}
     >
-      <div className="detail-gallery-stage" aria-live="polite">
+      <div className="detail-gallery-stage">
         <Image
           className="detail-product-image"
           src={activeImage.url}
@@ -73,6 +73,9 @@ export function ProductGallery({ images }: ProductGalleryProps) {
           </>
         ) : null}
       </div>
+      <p className="sr-only" role="status">
+        Imagem {activeIndex + 1} de {images.length}: {activeImage.alt}
+      </p>
 
       {hasMultipleImages ? (
         <div className="detail-thumbnails" aria-label="Miniaturas do produto">

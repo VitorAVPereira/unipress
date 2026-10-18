@@ -77,6 +77,7 @@ describe('galeria da página de produto', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exibir Detalhe da conexão' }))
 
     expect(screen.getByRole('img', { name: 'Detalhe da conexão — imagem 3 de 3' })).toBeTruthy()
+    expect(screen.getByRole('status').textContent).toBe('Imagem 3 de 3: Detalhe da conexão')
   })
 
   it('navega lateralmente pelas fotos e reinicia ao chegar ao final', async () => {
