@@ -39,38 +39,6 @@ test.describe('site UniPress', () => {
     const databaseURL = process.env.DATABASE_URL
     if (!databaseURL) throw new Error('DATABASE_URL é obrigatória para o teste E2E da página Sobre.')
 
-    const database = new Client({ connectionString: databaseURL })
-    await database.connect()
-    const originalAbout = await database.query<{ id: number; image_id: number | null }>(
-      'SELECT "id", "image_id" FROM "about" ORDER BY "id" LIMIT 1',
-    )
-    const fixture = await database.query<{ id: number }>(
-      `
-      INSERT INTO "media" ("alt", "url", "filename", "mime_type", "width", "height")
-      VALUES ('Imagem E2E da página Sobre', '/media/whatsapp.png', 'whatsapp.png', 'image/png', 512, 512)
-      RETURNING "id"
-      `,
-    )
-    const mediaID = fixture.rows[0].id
-    let insertedAboutID: number | undefined
-
-    if (originalAbout.rows[0]) {
-      await database.query('UPDATE "about" SET "image_id" = $1, "updated_at" = now() WHERE "id" = $2', [
-        mediaID,
-        originalAbout.rows[0].id,
-      ])
-    } else {
-      const created = await database.query<{ id: number }>(
-        `
-        INSERT INTO "about" ("image_id", "_status", "created_at", "updated_at")
-        VALUES ($1, 'published', now(), now())
-        RETURNING "id"
-        `,
-        [mediaID],
-      )
-      insertedAboutID = created.rows[0].id
-    }
-
     const inspectImage = async (width: number, height: number) => {
       await page.setViewportSize({ width, height })
       await page.goto(`/sobre?viewport=${width}`)
@@ -105,7 +73,40 @@ test.describe('site UniPress', () => {
       })
     }
 
+    const database = new Client({ connectionString: databaseURL })
+    await database.connect()
+    let originalAbout: { id: number; image_id: number | null } | undefined
+    let mediaID: number | undefined
+    let insertedAboutID: number | undefined
+
     try {
+      const aboutResult = await database.query<{ id: number; image_id: number | null }>(
+        'SELECT "id", "image_id" FROM "about" ORDER BY "id" LIMIT 1',
+      )
+      originalAbout = aboutResult.rows[0]
+      const fixture = await database.query<{ id: number }>(
+        `
+        INSERT INTO "media" ("alt", "url", "filename", "mime_type", "width", "height")
+        VALUES ('Imagem E2E da página Sobre', '/media/whatsapp.png', 'whatsapp.png', 'image/png', 512, 512)
+        RETURNING "id"
+        `,
+      )
+      mediaID = fixture.rows[0].id
+
+      if (originalAbout) {
+        await database.query('UPDATE "about" SET "image_id" = $1 WHERE "id" = $2', [mediaID, originalAbout.id])
+      } else {
+        const created = await database.query<{ id: number }>(
+          `
+          INSERT INTO "about" ("image_id", "_status", "created_at", "updated_at")
+          VALUES ($1, 'published', now(), now())
+          RETURNING "id"
+          `,
+          [mediaID],
+        )
+        insertedAboutID = created.rows[0].id
+      }
+
       expect(await inspectImage(1280, 900)).toEqual({
         borderWidths: ['0px', '0px', '0px', '0px'],
         imagePadding: ['12px', '12px', '12px', '12px'],
@@ -119,16 +120,30 @@ test.describe('site UniPress', () => {
         objectFit: 'contain',
       })
     } finally {
-      if (insertedAboutID != null) {
-        await database.query('DELETE FROM "about" WHERE "id" = $1', [insertedAboutID])
-      } else if (originalAbout.rows[0]) {
-        await database.query('UPDATE "about" SET "image_id" = $1, "updated_at" = now() WHERE "id" = $2', [
-          originalAbout.rows[0].image_id,
-          originalAbout.rows[0].id,
-        ])
+      const cleanupErrors: unknown[] = []
+      try {
+        if (insertedAboutID != null) {
+          await database.query('DELETE FROM "about" WHERE "id" = $1', [insertedAboutID])
+        } else if (originalAbout) {
+          await database.query('UPDATE "about" SET "image_id" = $1 WHERE "id" = $2', [
+            originalAbout.image_id,
+            originalAbout.id,
+          ])
+        }
+      } catch (error) {
+        cleanupErrors.push(error)
       }
-      await database.query('DELETE FROM "media" WHERE "id" = $1', [mediaID])
-      await database.end()
+      try {
+        if (mediaID != null) await database.query('DELETE FROM "media" WHERE "id" = $1', [mediaID])
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+      try {
+        await database.end()
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+      if (cleanupErrors.length > 0) throw cleanupErrors[0]
     }
   })
 
