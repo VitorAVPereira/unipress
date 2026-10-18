@@ -19,6 +19,22 @@ test.describe('site UniPress', () => {
     await expect(page.locator('.hero-ring')).toHaveCount(0)
   })
 
+  test('centraliza os benefícios sem numeração e destaca os títulos em vermelho', async ({ page }) => {
+    await page.goto('/')
+
+    const cards = page.locator('.benefit-grid article')
+    await expect(cards).toHaveCount(3)
+    await expect(page.locator('.benefit-grid article > span')).toHaveCount(0)
+
+    for (const card of await cards.all()) {
+      await expect(card).toHaveCSS('display', 'flex')
+      await expect(card).toHaveCSS('align-items', 'center')
+      await expect(card).toHaveCSS('justify-content', 'center')
+      await expect(card).toHaveCSS('text-align', 'center')
+      await expect(card.getByRole('heading')).toHaveCSS('color', 'rgb(215, 25, 32)')
+    }
+  })
+
   test('mantém os cards de destaque fora do centro do instrumento', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 })
     await page.goto('/')

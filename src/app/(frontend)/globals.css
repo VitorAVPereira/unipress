@@ -185,9 +185,8 @@ p { margin: 0; color: var(--muted); }
 .process-list strong { font: 650 1rem var(--font-display); }
 
 .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-.benefit-grid article { min-height: 270px; padding: 38px; background: white; }
-.benefit-grid article > span { color: var(--red); font: 800 .73rem var(--font-display); }
-.benefit-grid h3 { margin-top: 50px; }
+.benefit-grid article { display: flex; min-height: 270px; align-items: center; justify-content: center; flex-direction: column; padding: 38px; text-align: center; background: white; }
+.benefit-grid h3 { color: var(--red); }
 .benefit-grid p { margin-top: 14px; }
 .cta-section { display: flex; min-height: 300px; margin-bottom: 110px; padding: 58px 65px; align-items: center; justify-content: space-between; gap: 40px; color: white; background: var(--ink); box-shadow: inset 7px 0 var(--red); }
 .cta-section h2 { margin-top: 10px; font-size: clamp(2rem, 3.4vw, 3.2rem); }
@@ -248,7 +247,8 @@ p { margin: 0; color: var(--muted); }
 .detail-visual-fallback { min-height: 520px; background: var(--surface); }
 .detail-gallery { width: 100%; min-width: 0; }
 .detail-gallery-stage { position: relative; display: grid; overflow: hidden; aspect-ratio: 1; place-items: center; background: var(--surface); }
-.detail-product-image { width: 100%; height: 100%; max-height: 620px; object-fit: contain; padding: clamp(1.5rem, 5vw, 4rem); }
+.detail-gallery-image-frame { position: absolute; inset: clamp(18px, 7%, 48px); }
+.detail-product-image { object-fit: contain; object-position: center center; }
 .detail-gallery-arrow { position: absolute; z-index: 2; top: 50%; display: grid; width: 46px; height: 46px; padding: 0; place-items: center; color: var(--ink); background: rgb(255 255 255 / 94%); border: 1px solid var(--line); border-radius: 50%; box-shadow: 0 8px 24px rgb(17 18 20 / 12%); cursor: pointer; transform: translateY(-50%); }
 .detail-gallery-arrow:hover { color: white; background: var(--red); border-color: var(--red); }
 .detail-gallery-arrow-previous { left: 14px; }
