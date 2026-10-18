@@ -72,7 +72,10 @@ describe('galeria da página de produto', () => {
       'Exibir Vista traseira',
       'Exibir Detalhe da conexão',
     ])
-    expect(screen.getByRole('img', { name: 'Vista frontal — imagem 1 de 3' })).toBeTruthy()
+    const activeImage = screen.getByRole('img', { name: 'Vista frontal — imagem 1 de 3' })
+    expect(activeImage.closest('.detail-gallery-image-frame')).not.toBeNull()
+    expect(activeImage.style.objectFit).toBe('contain')
+    expect(activeImage.style.objectPosition).toBe('center center')
 
     fireEvent.click(screen.getByRole('button', { name: 'Exibir Detalhe da conexão' }))
 

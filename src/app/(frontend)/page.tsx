@@ -240,9 +240,8 @@ export default async function HomePage() {
           <h2>Agilidade sem abrir mão do rigor técnico.</h2>
         </div>
         <div className="benefit-grid">
-          {benefits.slice(0, 3).map((benefit, index) => (
+          {benefits.slice(0, 3).map((benefit) => (
             <article key={benefit.title}>
-              <span>0{index + 1}</span>
               <h3>{benefit.title}</h3>
               <p>{benefit.description}</p>
             </article>

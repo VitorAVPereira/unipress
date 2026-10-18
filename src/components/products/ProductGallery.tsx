@@ -40,15 +40,18 @@ export function ProductGallery({ images }: ProductGalleryProps) {
       }}
     >
       <div className="detail-gallery-stage">
-        <Image
-          className="detail-product-image"
-          src={activeImage.url}
-          alt={activeImage.alt}
-          aria-label={`${activeImage.alt} — imagem ${activeIndex + 1} de ${images.length}`}
-          width={900}
-          height={900}
-          priority={activeIndex === 0}
-        />
+        <div className="detail-gallery-image-frame">
+          <Image
+            className="detail-product-image"
+            src={activeImage.url}
+            alt={activeImage.alt}
+            aria-label={`${activeImage.alt} — imagem ${activeIndex + 1} de ${images.length}`}
+            fill
+            sizes="(max-width: 800px) calc(100vw - 64px), 520px"
+            priority={activeIndex === 0}
+            style={{ objectFit: 'contain', objectPosition: 'center center' }}
+          />
+        </div>
         {hasMultipleImages ? (
           <>
             <button
