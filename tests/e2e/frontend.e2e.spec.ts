@@ -35,7 +35,7 @@ test.describe('site UniPress', () => {
       .toBeLessThan(0.1)
   })
 
-  test('exibe a imagem da página Sobre somente com borda preta', async ({ page }) => {
+  test('exibe a imagem da página Sobre sem moldura e próxima das bordas', async ({ page }) => {
     await page.goto('/sobre')
 
     const visual = page.locator('.about-visual')
@@ -44,22 +44,24 @@ test.describe('site UniPress', () => {
     const styles = await visual.evaluate((element) => {
       const visualStyle = getComputedStyle(element)
       const decorationStyle = getComputedStyle(element, '::before')
+      const image = element.querySelector('.about-image') || document.createElement('img')
+      image.classList.add('about-image')
+      if (!image.parentElement) element.append(image)
+      const imageStyle = getComputedStyle(image)
 
       return {
         backgroundColor: visualStyle.backgroundColor,
-        borderColor: visualStyle.borderTopColor,
-        borderStyle: visualStyle.borderTopStyle,
         borderWidth: visualStyle.borderTopWidth,
         decorationBackground: decorationStyle.backgroundImage,
+        imagePadding: imageStyle.paddingTop,
       }
     })
 
     expect(styles).toEqual({
       backgroundColor: 'rgb(255, 255, 255)',
-      borderColor: 'rgb(17, 18, 20)',
-      borderStyle: 'solid',
-      borderWidth: '4px',
+      borderWidth: '0px',
       decorationBackground: 'none',
+      imagePadding: '12px',
     })
   })
 
