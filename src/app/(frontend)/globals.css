@@ -314,10 +314,11 @@ p { margin: 0; color: var(--muted); }
 .instrument-grid ul { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .instrument-grid li { display: flex; align-items: center; gap: 9px; padding: 15px; background: white; border: 1px solid var(--line); font-size: .83rem; font-weight: 650; }
 .instrument-grid li svg { color: var(--red); }
-.service-logistics { display: grid; grid-template-columns: 50px 1fr 40px 50px 1fr; gap: 20px; align-items: center; padding-block: 80px 110px; }
-.service-logistics > svg { color: var(--red); }
-.service-logistics > div span { color: var(--red); font: 800 .7rem var(--font-display); }
-.service-logistics h3 { margin-top: 4px; font-size: 1.15rem; }
+.service-logistics { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 20px; align-items: stretch; padding-block: 80px 110px; }
+.service-logistics-card { display: grid; min-height: 160px; grid-template-columns: 52px minmax(0, 1fr); gap: 22px; align-items: center; padding: 30px 34px; background: white; border: 1px solid var(--line); }
+.service-logistics-card > svg, .service-logistics-arrow { align-self: center; color: var(--red); }
+.service-logistics-arrow { align-self: center; }
+.service-logistics h3 { font-size: 1.15rem; }
 .service-logistics p { margin-top: 5px; font-size: .82rem; }
 
 /* About */
@@ -527,8 +528,8 @@ p { margin: 0; color: var(--muted); }
   .service-card { grid-template-columns: 72px 1fr; }
   .service-card-proof { grid-column: 2; padding: 15px 0 0; border-left: 0; border-top: 1px solid var(--line); }
   .contact-grid { margin-top: -105px; }
-  .service-logistics { grid-template-columns: 42px 1fr; }
-  .service-logistics > svg:nth-of-type(2) { display: none; }
+  .service-logistics { grid-template-columns: 1fr; gap: 16px; }
+  .service-logistics-arrow { display: none; }
   .footer-grid { grid-template-columns: 1.2fr .8fr; }
   .footer-grid > div:last-child { grid-column: 1 / -1; }
   .client-area-heading { align-items: stretch; flex-direction: column; }
