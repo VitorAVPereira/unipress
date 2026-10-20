@@ -24,12 +24,6 @@
   color: var(--theme-error-500);
 }
 
-// The native Payload order is the single source of truth. This counter makes
-// that drag handle understandable as a numbered position column.
-.collection-list--products .table table tbody {
-  counter-reset: product-position;
-}
-
 .product-order-help {
   margin: 0 0 12px;
   color: var(--theme-elevation-600);
@@ -40,33 +34,103 @@
   display: none;
 }
 
-.collection-list--products .table table #heading-_dragHandle,
-.collection-list--products .table table .cell-_dragHandle {
-  width: 88px;
-  min-width: 88px;
+.product-order-panel {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  background: var(--theme-elevation-0);
 }
 
-.collection-list--products .table table #heading-_dragHandle {
-  font-size: 0;
+.product-order-list {
+  max-height: 520px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 3px;
+  list-style: none;
 }
 
-.collection-list--products .table table #heading-_dragHandle::before {
-  content: 'Posição';
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.collection-list--products .table table tbody .cell-_dragHandle {
-  display: flex;
+.product-order-item {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 32px;
   align-items: center;
-  gap: 8px;
-  counter-increment: product-position;
+  min-height: 48px;
+  border-bottom: 1px solid var(--theme-elevation-100);
+  background: var(--theme-elevation-0);
+  cursor: grab;
+  user-select: none;
+}
+
+.product-order-item:last-child {
+  border-bottom: 0;
+}
+
+.product-order-item:active {
+  cursor: grabbing;
+}
+
+.product-order-position {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid var(--theme-elevation-100);
+  color: var(--theme-elevation-650);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
 
-.collection-list--products .table table tbody .cell-_dragHandle::before {
-  min-width: 2ch;
-  content: counter(product-position);
-  text-align: right;
+.product-order-item > :nth-child(2) {
+  padding: 0 14px;
+}
+
+.product-order-drag-hint {
+  color: var(--theme-elevation-500);
+  font-weight: 700;
+  letter-spacing: -3px;
+}
+
+.product-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.product-order-actions button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.product-order-actions button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.product-order-save {
+  border-color: var(--theme-success-500) !important;
+  background: var(--theme-success-500);
+  color: #fff;
+  font-weight: 600;
+}
+
+.product-order-cancel {
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+}
+
+.product-order-status {
+  color: var(--theme-success-600);
+  font-size: 0.85rem;
+}
+
+.product-order-status.is-pending,
+.product-order-status.is-error {
+  color: var(--theme-warning-700);
+  font-weight: 600;
 }
