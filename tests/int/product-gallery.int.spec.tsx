@@ -93,4 +93,24 @@ describe('galeria da página de produto', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Imagem anterior' }))
     expect(screen.getByRole('img', { name: 'Detalhe da conexão — imagem 3 de 3' })).toBeTruthy()
   })
+
+  it('omite a faixa de dados técnicos quando o produto não possui especificações', async () => {
+    await renderPage()
+
+    expect(screen.queryByRole('heading', { name: 'Especificações do modelo' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Voltar ao catálogo' })).not.toBeNull()
+  })
+
+  it('mantém a faixa de dados técnicos quando há especificações cadastradas', async () => {
+    vi.mocked(getProductBySlug).mockResolvedValue({
+      ...product(),
+      specifications: [['Faixa de medição', '-50 a 150 °C']],
+    } as never)
+
+    await renderPage()
+
+    expect(screen.getByRole('heading', { name: 'Especificações do modelo' })).not.toBeNull()
+    expect(screen.getByText('Faixa de medição')).not.toBeNull()
+    expect(screen.getByText('-50 a 150 °C')).not.toBeNull()
+  })
 })

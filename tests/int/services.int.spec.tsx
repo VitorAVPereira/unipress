@@ -28,9 +28,15 @@ describe('imagem do cabeçalho interno do serviço', () => {
     )
 
     const image = screen.getByRole('img', { name: 'Laboratório de calibração' })
+    const frame = image.parentElement
     const optimizedSource = new URL(image.getAttribute('src') || '', 'http://localhost').searchParams.get('url')
     expect(optimizedSource).toContain('calibracao.jpg')
     expect(optimizedSource).toContain('2026-10-15T22%3A00%3A00.000Z')
+    expect(frame?.style.backgroundColor).toBe('transparent')
+    expect(frame?.style.borderWidth).toBe('0px')
+    expect(image.style.objectFit).toBe('contain')
+    expect(image.style.objectPosition).toBe('center center')
+    expect(image.style.padding).toBe('0px')
     expect(screen.queryByText('RBC')).toBeNull()
   })
 
