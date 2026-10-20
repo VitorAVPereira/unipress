@@ -23,3 +23,50 @@
 .client-admin-actions [role='alert'] {
   color: var(--theme-error-500);
 }
+
+// The native Payload order is the single source of truth. This counter makes
+// that drag handle understandable as a numbered position column.
+.collection-list--products .table table tbody {
+  counter-reset: product-position;
+}
+
+.product-order-help {
+  margin: 0 0 12px;
+  color: var(--theme-elevation-600);
+  font-size: 0.85rem;
+}
+
+.collection-list--products .per-page {
+  display: none;
+}
+
+.collection-list--products .table table #heading-_dragHandle,
+.collection-list--products .table table .cell-_dragHandle {
+  width: 88px;
+  min-width: 88px;
+}
+
+.collection-list--products .table table #heading-_dragHandle {
+  font-size: 0;
+}
+
+.collection-list--products .table table #heading-_dragHandle::before {
+  content: 'Posição';
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.collection-list--products .table table tbody .cell-_dragHandle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  counter-increment: product-position;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.collection-list--products .table table tbody .cell-_dragHandle::before {
+  min-width: 2ch;
+  content: counter(product-position);
+  text-align: right;
+}

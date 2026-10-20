@@ -314,7 +314,7 @@ export async function getProducts({ draft = false }: ContentOptions = {}): Promi
       collection: 'products',
       depth: 2,
       draft,
-      limit: 100,
+      limit: 0,
       overrideAccess: draft,
       sort: ['_order', 'name'],
       where: draft ? undefined : { _status: { equals: 'published' } },

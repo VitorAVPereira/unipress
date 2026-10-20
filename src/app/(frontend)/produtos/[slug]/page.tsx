@@ -63,14 +63,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="availability-note"><ShieldCheck size={20} /><span><strong>Disponibilidade sob consulta</strong>Confirme faixa, conexão e prazo com nossa equipe.</span></div>
         </div>
       </section>
-      <section className="spec-section">
-        <div className="container spec-grid">
-          <div><span className="eyebrow">Dados técnicos</span><h2>Especificações do modelo</h2><p>As opções abaixo são cadastradas no painel e podem abranger diferentes variações do mesmo modelo.</p></div>
-          <dl className="spec-table">
-            {product.specifications.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          </dl>
-        </div>
-      </section>
+      {product.specifications.length > 0 && (
+        <section className="spec-section">
+          <div className="container spec-grid">
+            <div><span className="eyebrow">Dados técnicos</span><h2>Especificações do modelo</h2><p>As opções abaixo são cadastradas no painel e podem abranger diferentes variações do mesmo modelo.</p></div>
+            <dl className="spec-table">
+              {product.specifications.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+            </dl>
+          </div>
+        </section>
+      )}
       <section className="container back-row"><Link className="text-link" href="/produtos"><ArrowLeft size={17} /> Voltar ao catálogo</Link></section>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>

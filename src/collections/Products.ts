@@ -4,6 +4,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { seoFields } from '@/fields/seo'
+import { enforceProductOrderCapacity } from '@/hooks/enforceProductOrderCapacity'
 import { revalidateDeletedProduct, revalidateProduct } from '@/hooks/revalidateContent'
 import { syncProductFamilyProfile } from '@/hooks/syncProductFamilyProfile'
 import { generatePreviewPathWhenReady } from '@/lib/preview'
@@ -17,11 +18,16 @@ const listField = (name: string, label: string): Field => ({
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  defaultSort: '_order',
   orderable: true,
   labels: { singular: 'Produto', plural: 'Produtos' },
   access: { create: authenticated, delete: authenticated, read: authenticatedOrPublished, update: authenticated },
   admin: {
+    components: {
+      beforeListTable: ['@/components/admin/ProductOrderPositioning#ProductOrderPositioning'],
+    },
     defaultColumns: ['name', 'code', 'family', '_status', 'updatedAt'],
+    pagination: { defaultLimit: 1000, limits: [1000] },
     livePreview: {
       url: ({ data }) => generatePreviewPathWhenReady({ collection: 'products', slug: data?.slug }),
     },
@@ -31,7 +37,7 @@ export const Products: CollectionConfig = {
   hooks: {
     afterChange: [revalidateProduct],
     afterDelete: [revalidateDeletedProduct],
-    beforeValidate: [syncProductFamilyProfile],
+    beforeValidate: [enforceProductOrderCapacity, syncProductFamilyProfile],
   },
   versions: { drafts: { autosave: true, schedulePublish: true }, maxPerDoc: 20 },
   fields: [

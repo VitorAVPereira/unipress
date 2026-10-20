@@ -19,7 +19,7 @@ test.describe('site UniPress', () => {
     await expect(page.locator('.hero-ring')).toHaveCount(0)
   })
 
-  test('centraliza os benefícios sem numeração e destaca os títulos em vermelho', async ({ page }) => {
+  test('centraliza os benefícios sem numeração e usa a identidade do título da seção', async ({ page }) => {
     await page.goto('/')
 
     const cards = page.locator('.benefit-grid article')
@@ -31,7 +31,11 @@ test.describe('site UniPress', () => {
       await expect(card).toHaveCSS('align-items', 'center')
       await expect(card).toHaveCSS('justify-content', 'center')
       await expect(card).toHaveCSS('text-align', 'center')
-      await expect(card.getByRole('heading')).toHaveCSS('color', 'rgb(215, 25, 32)')
+      const title = card.getByRole('heading')
+      await expect(title).toHaveCSS('color', 'rgb(169, 15, 21)')
+      await expect(title).toHaveCSS('font-size', '20px')
+      await expect(title).toHaveCSS('font-weight', '800')
+      await expect(title).toHaveCSS('text-transform', 'uppercase')
     }
   })
 
