@@ -3,8 +3,9 @@ import type { CollectionConfig, Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { productOrderEndpoints } from '@/endpoints/productOrder'
 import { seoFields } from '@/fields/seo'
-import { enforceProductOrderCapacity } from '@/hooks/enforceProductOrderCapacity'
+import { appendNewProductToOrder, enforceProductOrderCapacity } from '@/hooks/enforceProductOrderCapacity'
 import { revalidateDeletedProduct, revalidateProduct } from '@/hooks/revalidateContent'
 import { syncProductFamilyProfile } from '@/hooks/syncProductFamilyProfile'
 import { generatePreviewPathWhenReady } from '@/lib/preview'
@@ -19,9 +20,9 @@ const listField = (name: string, label: string): Field => ({
 export const Products: CollectionConfig = {
   slug: 'products',
   defaultSort: '_order',
-  orderable: true,
   labels: { singular: 'Produto', plural: 'Produtos' },
   access: { create: authenticated, delete: authenticated, read: authenticatedOrPublished, update: authenticated },
+  endpoints: productOrderEndpoints,
   admin: {
     components: {
       beforeListTable: ['@/components/admin/ProductOrderPositioning#ProductOrderPositioning'],
@@ -37,10 +38,22 @@ export const Products: CollectionConfig = {
   hooks: {
     afterChange: [revalidateProduct],
     afterDelete: [revalidateDeletedProduct],
+    beforeChange: [appendNewProductToOrder],
     beforeValidate: [enforceProductOrderCapacity, syncProductFamilyProfile],
   },
   versions: { drafts: { autosave: true, schedulePublish: true }, maxPerDoc: 20 },
   fields: [
+    {
+      name: '_order',
+      type: 'text',
+      index: true,
+      admin: {
+        disableBulkEdit: true,
+        disableListColumn: true,
+        hidden: true,
+        readOnly: true,
+      },
+    },
     { name: 'name', type: 'text', label: 'Nome', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, index: true },
     { name: 'code', type: 'text', label: 'Código / modelo', required: true, unique: true, index: true },

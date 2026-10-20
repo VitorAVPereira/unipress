@@ -44,6 +44,10 @@ export const revalidateDeletedProduct: CollectionAfterDeleteHook = ({ doc, req }
   return doc
 }
 
+export function revalidateProductOrder() {
+  revalidate(['/', '/produtos', '/sitemap.xml'])
+}
+
 export const revalidateService: CollectionAfterChangeHook = ({ doc, previousDoc, req }) => {
   const affectsPublishedContent = doc._status === 'published' || previousDoc?._status === 'published'
   if (!req.context?.disableRevalidate && affectsPublishedContent) {
