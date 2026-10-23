@@ -3,6 +3,8 @@ export type ContactPayload = {
   company?: string
   email?: string
   phone?: string
+  cellphone?: string
+  cnpj?: string
   subject: string
   message: string
   consent: boolean
@@ -37,6 +39,8 @@ export function parseContactPayload(_input: unknown): ContactParseResult {
     company: clean(input.company),
     email: clean(input.email),
     phone: clean(input.phone),
+    cellphone: clean(input.cellphone),
+    cnpj: clean(input.cnpj),
     subject: clean(input.subject),
     message: clean(input.message),
     consent: input.consent === true,
@@ -46,7 +50,10 @@ export function parseContactPayload(_input: unknown): ContactParseResult {
 
   if (data.name.length < 2) issues.push('name')
   if (data.name.length > 120) issues.push('name')
-  if (!data.email && !data.phone) issues.push('contact_channel')
+  if (!data.email && !data.phone && !data.cellphone) issues.push('contact_channel')
+  if ((data.company?.length || 0) > 160) issues.push('company')
+  if ((data.cnpj?.length || 0) > 30) issues.push('cnpj')
+  if ((data.cellphone?.length || 0) > 30 || (data.phone?.length || 0) > 30) issues.push('phone')
   if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) issues.push('email')
   if (data.subject.length < 3) issues.push('subject')
   if (data.subject.length > 160) issues.push('subject')
@@ -68,11 +75,10 @@ export async function processContactSubmission(
     return { ok: false, code: parsed.issues.includes('honeypot') ? 'spam' : 'validation' }
   }
 
-  if (!(await dependencies.verifyToken(parsed.data.turnstileToken))) {
-    return { ok: false, code: 'spam' }
-  }
-
   try {
+    if (!(await dependencies.verifyToken(parsed.data.turnstileToken))) {
+      return { ok: false, code: 'spam' }
+    }
     await dependencies.deliver(parsed.data)
     return { ok: true }
   } catch {

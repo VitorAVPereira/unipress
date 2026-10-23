@@ -30,19 +30,8 @@ export default async function ContactPage() {
           {settings.address && <div className="contact-method"><MapPin /><span><small>Endereço</small><strong>{settings.address}</strong></span></div>}
         </div>
         <div className="form-card">
-          {contactFormEnabled ? (
-            <>
-              <div className="form-card-heading"><span>Solicitação</span><h2>Envie uma mensagem</h2><p>Campos marcados com * são obrigatórios.</p></div>
-              <ContactForm />
-            </>
-          ) : (
-            <div className="form-card-heading">
-              <span>Canal disponível</span>
-              <h2>Atendimento pelo WhatsApp</h2>
-              <p>O formulário por e-mail será disponibilizado em breve. Enquanto isso, nossa equipe atende diretamente pelo WhatsApp.</p>
-              <a className="button button-primary" href={whatsapp} target="_blank" rel="noreferrer">Iniciar conversa</a>
-            </div>
-          )}
+          <div className="form-card-heading"><span>Solicitação</span><h2>Envie uma mensagem</h2><p>Preencha o formulário abaixo e conte como podemos ajudar. Campos marcados com * são obrigatórios.</p></div>
+          <ContactForm deliveryMode={contactFormEnabled ? 'email' : 'whatsapp'} whatsappURL={whatsapp} />
         </div>
       </section>
     </>

@@ -36,6 +36,8 @@ describe('rota de contato', () => {
         company: 'Indústria Exemplo',
         email: 'ana@example.com',
         phone: '',
+        cellphone: '(11) 99999-1234',
+        cnpj: '12.345.678/0001-90',
         subject: 'Consulta de produto',
         message: 'Preciso de informações sobre um produto.',
         consent: true,
@@ -48,6 +50,8 @@ describe('rota de contato', () => {
     expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({
       to: 'comercial@example.com',
       replyTo: 'ana@example.com',
+      text: expect.stringContaining('CNPJ: 12.345.678/0001-90'),
     }))
+    expect(mocks.send.mock.calls[0][0].text).toContain('Celular: (11) 99999-1234')
   })
 })

@@ -42,12 +42,15 @@ describe('interface do lançamento institucional', () => {
     vi.unstubAllEnvs()
   })
 
-  it('oferece somente WhatsApp quando o formulário não está configurado', async () => {
+  it('mantém o formulário visível e permite enviar pelo WhatsApp sem configuração de e-mail', async () => {
     render(await ContactPage())
 
     expect(screen.getByRole('link', { name: /WhatsApp/ }).getAttribute('href')).toContain('wa.me/5511999999999')
-    expect(screen.queryByRole('button', { name: 'Enviar mensagem' })).toBeNull()
-    expect(screen.getByText(/atendimento pelo WhatsApp/i)).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Enviar pelo WhatsApp' })).not.toBeNull()
+    for (const label of ['Nome *', 'Empresa', 'Celular', 'E-mail', 'CNPJ', 'Telefone', 'Mensagem *']) {
+      expect(screen.getByLabelText(label)).not.toBeNull()
+    }
+    expect(screen.queryByText(/será disponibilizado em breve/)).toBeNull()
   })
 
   it('exibe o formulário quando o envio está configurado e o admin definiu o e-mail', async () => {

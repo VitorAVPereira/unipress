@@ -15,6 +15,15 @@ const validPayload = {
 }
 
 describe('contato', () => {
+  it('aceita celular como canal de retorno e preserva CNPJ e telefone separados', () => {
+    const result = parseContactPayload({
+      ...validPayload, email: '', cellphone: '(11) 99999-1234', cnpj: '12.345.678/0001-90',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toMatchObject({ cellphone: '(11) 99999-1234', cnpj: '12.345.678/0001-90', phone: '' })
+    }
+  })
   it('aceita ao menos um canal de retorno', () => {
     const result = parseContactPayload(validPayload)
 
