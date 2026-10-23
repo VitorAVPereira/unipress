@@ -187,12 +187,15 @@ test.describe('site UniPress', () => {
     expect(title!.x + title!.width).toBeLessThan(1024 * 0.82 - 24)
   })
 
-  test('oferece contato direto por WhatsApp sem formulário de e-mail', async ({ page }) => {
+  test('exibe o formulário de contato e mantém o atendimento por WhatsApp', async ({ page }) => {
     await page.goto('/contato')
 
-    await expect(page.getByRole('heading', { name: 'Atendimento pelo WhatsApp' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Enviar mensagem' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Iniciar conversa' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Envie uma mensagem' })).toBeVisible()
+    await expect(page.getByLabel('Nome *', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('CNPJ', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Mensagem *', { exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Enviar mensagem|Enviar pelo WhatsApp/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /^WhatsApp/ })).toBeVisible()
   })
 
   test('não cria link quebrado para calibração sem serviço publicado', async ({ page }) => {

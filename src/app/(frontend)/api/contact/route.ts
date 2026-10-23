@@ -40,7 +40,9 @@ async function deliverEmail(data: ContactPayload) {
     text: [
       `Nome: ${data.name}`,
       `Empresa: ${data.company || 'Não informada'}`,
+      `CNPJ: ${data.cnpj || 'Não informado'}`,
       `E-mail: ${data.email || 'Não informado'}`,
+      `Celular: ${data.cellphone || 'Não informado'}`,
       `Telefone: ${data.phone || 'Não informado'}`,
       '',
       data.message,

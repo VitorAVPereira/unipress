@@ -352,10 +352,11 @@ p { margin: 0; color: var(--muted); }
 .form-card-heading h2 { margin-top: 6px; font-size: 2.2rem; }
 .form-card-heading p { margin: 7px 0 25px; font-size: .8rem; }
 .contact-form { display: grid; gap: 18px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .contact-form label { display: grid; gap: 7px; color: #34363a; font-size: .76rem; font-weight: 700; }
 .contact-form input, .contact-form textarea, .contact-form select { width: 100%; padding: 12px 13px; border: 1px solid #d7d8da; border-radius: 2px; background: #fafafa; outline: none; }
 .contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus { border-color: var(--ink); background: white; }
+.contact-form textarea { resize: vertical; min-height: 130px; }
 .consent { display: flex !important; grid-template-columns: 18px 1fr; align-items: flex-start; gap: 9px !important; color: var(--muted) !important; font-weight: 400 !important; }
 .consent input { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--red); }
 .consent a { color: var(--red-dark); text-decoration: underline; }
