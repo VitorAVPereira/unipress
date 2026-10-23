@@ -48,6 +48,15 @@ export default async function FrontendLayout({ children }: { children: React.Rea
 
   return (
     <html className={`${inter.variable} ${manrope.variable}`} lang="pt-BR" data-scroll-behavior="smooth">
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18531984085" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-18531984085');
+        ` }} />
+      </head>
       <body>
         <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
         <SiteHeader whatsapp={whatsapp} logo={headerLogo} links={navigation} />
