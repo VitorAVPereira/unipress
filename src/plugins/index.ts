@@ -34,7 +34,7 @@ export const plugins: Plugin[] = [
     enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     collections: {
       documents: true,
-      media: true,
+      media: { disablePayloadAccessControl: true },
     },
     clientUpload: { serverHandlerPath: '/vercel-blob-public-upload' },
     token: process.env.BLOB_READ_WRITE_TOKEN,
