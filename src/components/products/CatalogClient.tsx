@@ -1,10 +1,10 @@
 'use client'
 
 import { Search, SlidersHorizontal, X } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useMemo, useTransition } from 'react'
 
-import { countActiveCatalogFacets, filterProducts, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
+import { countActiveCatalogFacets, filterProducts, writeCatalogFilters, type CatalogFilters } from '@/lib/catalog'
 import type { PublicProduct } from '@/lib/cms'
 
 import { MobileFilterPanel } from './MobileFilterPanel'
@@ -83,12 +83,10 @@ function CatalogFilterFields({
   })
 }
 
-export function CatalogClient({ products }: { products: PublicProduct[] }) {
-  const searchParams = useSearchParams()
+export function CatalogClient({ products, filters = {} }: { products: PublicProduct[]; filters?: CatalogFilters }) {
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const filters = useMemo(() => readCatalogFilters(new URLSearchParams(searchParams.toString())), [searchParams])
   const filteredProducts = useMemo(() => filterProducts(products, filters), [products, filters])
 
   const update = (next: CatalogFilters) => {
@@ -150,7 +148,7 @@ export function CatalogClient({ products }: { products: PublicProduct[] }) {
 
         {filteredProducts.length > 0 ? (
           <div className="product-grid">
-            {filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+            {filteredProducts.map((product, index) => <ProductCard key={product.id} product={product} eager={index < 3} />)}
           </div>
         ) : (
           <div className="empty-state">

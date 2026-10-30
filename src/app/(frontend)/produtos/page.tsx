@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 
 import { CatalogClient } from '@/components/products/CatalogClient'
 import { getProducts } from '@/lib/cms'
+import { readCatalogFilters } from '@/lib/catalog'
 
 export const metadata: Metadata = {
   title: 'Produtos',
@@ -10,8 +10,19 @@ export const metadata: Metadata = {
   alternates: { canonical: '/produtos' },
 }
 
-export default async function ProductsPage() {
-  const products = await getProducts()
+type ProductsPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const [products, query] = await Promise.all([getProducts(), searchParams])
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) {
+      params.append(key, item)
+    }
+  }
+  const filters = readCatalogFilters(params)
   return (
     <>
       <section className="page-hero page-hero-products">
@@ -22,9 +33,7 @@ export default async function ProductsPage() {
         </div>
       </section>
       <section className="catalog-section container">
-        <Suspense fallback={<div className="catalog-loading">Carregando catálogo...</div>}>
-          <CatalogClient products={products} />
-        </Suspense>
+        <CatalogClient products={products} filters={filters} />
       </section>
     </>
   )
