@@ -18,6 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(baseURL),
     title: { default: settings.defaultSeoTitle || 'UniPress', template: '%s | UniPress' },
     description: settings.defaultSeoDescription,
+    icons: {
+      icon: [
+        { url: '/favicon.ico?v=unipress-1', sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
+        { url: '/favicon.svg?v=unipress-1', sizes: 'any', type: 'image/svg+xml' },
+      ],
+      apple: [{ url: '/apple-touch-icon.png?v=unipress-1', sizes: '180x180', type: 'image/png' }],
+    },
     openGraph: { locale: 'pt_BR', siteName: 'UniPress', type: 'website' },
   }
 }

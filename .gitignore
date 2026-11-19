@@ -43,3 +43,12 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Local documents, design exports and temporary work files
+/docs-avulsos/
+/catalogo-work/
+/designs/
+/output/
+/outputs/
+/tmp/
+/.docx_inspect/
