@@ -8,6 +8,7 @@
     "build:vercel": "payload migrate && next build",
     "dev": "next dev",
     "generate:importmap": "payload generate:importmap",
+    "generate:favicons": "node src/scripts/generate-favicons.mjs",
     "generate:standards-qr": "tsx src/scripts/generate-reference-certificates-qr.ts",
     "generate:types": "payload generate:types",
     "lint": "eslint .",
