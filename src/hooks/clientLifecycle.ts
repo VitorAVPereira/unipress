@@ -1,9 +1,10 @@
 import { randomBytes } from 'crypto'
 import type {
   CollectionAfterChangeHook,
-  CollectionAfterOperationHook,
+  CollectionBeforeOperationHook,
   CollectionBeforeLoginHook,
   CollectionBeforeValidateHook,
+  PayloadRequest,
 } from 'payload'
 import { APIError } from 'payload'
 
@@ -11,6 +12,12 @@ import { recordAuditEvent } from '@/lib/audit'
 import { canClientLogin } from '@/lib/clientPortal'
 
 const skipLifecycle = { skipClientLifecycle: true }
+const passwordResetRequests = new WeakSet<PayloadRequest>()
+
+export const trackClientPasswordReset: CollectionBeforeOperationHook = ({ operation, req }) => {
+  if (operation === 'resetPassword') passwordResetRequests.add(req)
+  else if (operation === 'login') passwordResetRequests.delete(req)
+}
 
 export const prepareClientAccount: CollectionBeforeValidateHook = ({ data, operation }) => {
   if (operation === 'create' && data) {
@@ -20,8 +27,31 @@ export const prepareClientAccount: CollectionBeforeValidateHook = ({ data, opera
   return data
 }
 
-export const requireActiveClient: CollectionBeforeLoginHook = ({ user }) => {
+export const requireActiveClient: CollectionBeforeLoginHook = async ({ user, req }) => {
+  // Payload invokes beforeLogin after validating the reset token and saving the
+  // password, but before committing the transaction. Activate invitations here.
+  const isPasswordReset = passwordResetRequests.delete(req)
+  if (isPasswordReset && user.status === 'pending') {
+    await req.payload.update({
+      collection: 'clients',
+      id: user.id,
+      data: { inviteDeliveryStatus: 'accepted', status: 'active' },
+      context: skipLifecycle,
+      overrideAccess: true,
+      req,
+    })
+    user = { ...user, inviteDeliveryStatus: 'accepted', status: 'active' }
+  }
+
   if (!canClientLogin(user.status)) throw new APIError('E-mail ou senha inválidos.', 401)
+
+  if (isPasswordReset) {
+    await recordAuditEvent(req, {
+      action: 'client.password-defined',
+      entityReference: `client:${user.id}`,
+      entityType: 'client',
+    })
+  }
 
   return user
 }
@@ -96,27 +126,4 @@ export const handleClientChange: CollectionAfterChangeHook = async ({ context, d
   }
 
   return doc
-}
-
-export const activateClientAfterPasswordReset: CollectionAfterOperationHook<'clients'> = async ({ operation, req, result }) => {
-  if (operation !== 'resetPassword' || !result || typeof result !== 'object' || !('user' in result)) return result
-
-  const user = result.user as { id?: number | string } | null | undefined
-  if (user?.id != null) {
-    await req.payload.update({
-      collection: 'clients',
-      id: user.id,
-      data: { inviteDeliveryStatus: 'accepted', status: 'active' },
-      context: skipLifecycle,
-      overrideAccess: true,
-      req,
-    })
-    await recordAuditEvent(req, {
-      action: 'client.password-defined',
-      entityReference: `client:${user.id}`,
-      entityType: 'client',
-    })
-  }
-
-  return result
 }
