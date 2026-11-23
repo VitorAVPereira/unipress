@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { adminOnly, clientsReadAccess } from '@/access/portal'
 import { escapeHTML, normalizeCNPJ, normalizeEmail, validateCNPJ } from '@/lib/clientPortal'
 import {
-  activateClientAfterPasswordReset,
+  trackClientPasswordReset,
   handleClientChange,
   prepareClientAccount,
   requireActiveClient,
@@ -48,7 +48,7 @@ export const Clients: CollectionConfig = {
   },
   hooks: {
     afterChange: [handleClientChange],
-    afterOperation: [activateClientAfterPasswordReset],
+    beforeOperation: [trackClientPasswordReset],
     beforeLogin: [requireActiveClient],
     beforeValidate: [prepareClientAccount],
   },

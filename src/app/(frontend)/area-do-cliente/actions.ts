@@ -3,7 +3,7 @@
 import config from '@payload-config'
 import { login, logout } from '@payloadcms/next/auth'
 import { redirect } from 'next/navigation'
-import { getPayload } from 'payload'
+import { APIError, getPayload } from 'payload'
 
 import { normalizeEmail } from '@/lib/clientPortal'
 import { isPasswordRecoveryEnabled } from '@/lib/launch'
@@ -59,8 +59,11 @@ export async function resetPasswordAction(_state: AuthActionState, formData: For
   try {
     const payload = await getPayload({ config })
     await payload.resetPassword({ collection: 'clients', data: { password, token }, overrideAccess: true })
-  } catch {
-    return { error: 'Este link é inválido ou expirou. Solicite um novo link.' }
+  } catch (error) {
+    if (error instanceof APIError && error.message === 'Token is either invalid or has expired.') {
+      return { error: 'Este link é inválido ou expirou. Solicite um novo link.' }
+    }
+    return { error: 'Não foi possível definir a senha. Tente novamente ou fale com a equipe UniPress.' }
   }
 
   redirect('/area-do-cliente/entrar?passwordReset=1')
