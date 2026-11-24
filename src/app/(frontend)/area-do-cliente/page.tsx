@@ -8,6 +8,7 @@ import { CalibrationFilters } from '@/components/client-area/CalibrationFilters'
 import { Pagination } from '@/components/client-area/Pagination'
 import { buildCalibrationWhere, buildSummaryDateRanges, parseClientPortalFilters } from '@/lib/clientPortal'
 import { getClientSession } from '@/lib/clientSession'
+import { withClientAreaDiagnostics } from '@/lib/clientAreaDiagnostics'
 
 export const metadata: Metadata = { title: 'Área do cliente', robots: { index: false, follow: false } }
 
@@ -33,7 +34,7 @@ export default async function ClientAreaPage({ searchParams }: { searchParams: P
   const baseWhere: Where = { client: { equals: clientID } }
 
   const [calibrations, total, yearTotal, monthTotal] = await Promise.all([
-    session.payload.find({
+    withClientAreaDiagnostics('calibrations.list', () => session.payload.find({
       collection: 'calibrations',
       where: buildCalibrationWhere(clientID, filters) as Where,
       depth: 0,
@@ -42,10 +43,10 @@ export default async function ClientAreaPage({ searchParams }: { searchParams: P
       sort: '-calibrationDate',
       overrideAccess: false,
       req: session.req,
-    }),
-    session.payload.count({ collection: 'calibrations', where: baseWhere, overrideAccess: false, req: session.req }),
-    session.payload.count({ collection: 'calibrations', where: { and: [baseWhere, { calibrationDate: summaryRanges.year }] }, overrideAccess: false, req: session.req }),
-    session.payload.count({ collection: 'calibrations', where: { and: [baseWhere, { calibrationDate: summaryRanges.month }] }, overrideAccess: false, req: session.req }),
+    })),
+    withClientAreaDiagnostics('calibrations.total', () => session.payload.count({ collection: 'calibrations', where: baseWhere, overrideAccess: false, req: session.req })),
+    withClientAreaDiagnostics('calibrations.year', () => session.payload.count({ collection: 'calibrations', where: { and: [baseWhere, { calibrationDate: summaryRanges.year }] }, overrideAccess: false, req: session.req })),
+    withClientAreaDiagnostics('calibrations.month', () => session.payload.count({ collection: 'calibrations', where: { and: [baseWhere, { calibrationDate: summaryRanges.month }] }, overrideAccess: false, req: session.req })),
   ])
 
   return (
