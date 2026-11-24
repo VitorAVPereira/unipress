@@ -8,6 +8,7 @@ import * as migration_20260907_174649_separate_header_footer_logos from './20260
 import * as migration_20261012_233634_certificados_padroes from './20261012_233634_certificados_padroes';
 import * as migration_20261016_011036_services_families_product_order from './20261016_011036_services_families_product_order';
 import * as migration_20261016_015705_merge_admin_catalog_reference_snapshot from './20261016_015705_merge_admin_catalog_reference_snapshot';
+import * as migration_20261124_010000_calibrations_storage_prefix from './20261124_010000_calibrations_storage_prefix';
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20261016_015705_merge_admin_catalog_reference_snapshot.up,
     down: migration_20261016_015705_merge_admin_catalog_reference_snapshot.down,
     name: '20261016_015705_merge_admin_catalog_reference_snapshot',
+  },
+  {
+    up: migration_20261124_010000_calibrations_storage_prefix.up,
+    down: migration_20261124_010000_calibrations_storage_prefix.down,
+    name: '20261124_010000_calibrations_storage_prefix',
   },
 ];
