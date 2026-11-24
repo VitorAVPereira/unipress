@@ -17,7 +17,9 @@ describe('migração de serviços, famílias e ordem de produtos', () => {
     expect(names.indexOf('20261016_011036_services_families_product_order')).toBeGreaterThan(
       names.indexOf('20261012_233634_certificados_padroes'),
     )
-    expect(names.at(-1)).toBe('20261016_015705_merge_admin_catalog_reference_snapshot')
+    expect(names.indexOf('20261016_015705_merge_admin_catalog_reference_snapshot')).toBeGreaterThan(
+      names.indexOf('20261016_011036_services_families_product_order'),
+    )
   })
 
   it('cria famílias, migra vínculos e preenche a ordem antes de remover colunas antigas', async () => {

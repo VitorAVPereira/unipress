@@ -569,6 +569,7 @@ export interface Calibration {
    * O ano do certificado diverge do ano da calibração. Confirme para salvar a exceção.
    */
   yearMismatchConfirmed?: boolean | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1214,6 +1215,7 @@ export interface CalibrationsSelect<T extends boolean = true> {
   certificateNumber?: T;
   tag?: T;
   yearMismatchConfirmed?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

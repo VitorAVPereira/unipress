@@ -29,6 +29,23 @@ export function createReferenceCertificateBlobPlugin(token = process.env.STANDAR
   })
 }
 
+export function createCalibrationBlobPlugin(token = process.env.CERTIFICATES_BLOB_READ_WRITE_TOKEN): Plugin {
+  return vercelBlobStorage({
+    access: 'private',
+    addRandomSuffix: true,
+    alwaysInsertFields: true,
+    clientUploads: {
+      access: ({ req }) => req.user?.collection === 'users',
+    },
+    collections: {
+      calibrations: { prefix: 'certificates' },
+    },
+    clientUpload: { serverHandlerPath: '/vercel-blob-certificates-upload' },
+    enabled: Boolean(token),
+    token,
+  })
+}
+
 export const plugins: Plugin[] = [
   vercelBlobStorage({
     enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
@@ -39,18 +56,6 @@ export const plugins: Plugin[] = [
     clientUpload: { serverHandlerPath: '/vercel-blob-public-upload' },
     token: process.env.BLOB_READ_WRITE_TOKEN,
   }),
-  vercelBlobStorage({
-    access: 'private',
-    addRandomSuffix: true,
-    clientUploads: {
-      access: ({ req }) => req.user?.collection === 'users',
-    },
-    collections: {
-      calibrations: { prefix: 'certificates' },
-    },
-    clientUpload: { serverHandlerPath: '/vercel-blob-certificates-upload' },
-    enabled: Boolean(process.env.CERTIFICATES_BLOB_READ_WRITE_TOKEN),
-    token: process.env.CERTIFICATES_BLOB_READ_WRITE_TOKEN,
-  }),
+  createCalibrationBlobPlugin(),
   createReferenceCertificateBlobPlugin(),
 ]
